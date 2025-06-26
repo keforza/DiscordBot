@@ -47,35 +47,36 @@ module.exports = {
                 minute: '2-digit'
             });
 
-            // --- NUOVA LOGICA PER TRONCARE LA DESCRIZIONE ---
+            // --- LOGICA AGGIORNATA PER TRONCARE LA DESCRIZIONE SOLO PER RIGHE ---
             let description = ch.snippet.description || 'No description available.';
-            const lines = description.split('\n');
-            const maxLines = 5; // Puoi cambiare questo valore a 4 se preferisci
+            const maxLines = 5; // Puoi cambiare questo a 4 se preferisci visualizzare solo 4 righe
 
+            const lines = description.split('\n');
+            
             if (lines.length > maxLines) {
                 description = lines.slice(0, maxLines).join('\n') + '...';
             }
-            // --- FINE NUOVA LOGICA ---
+            // --- FINE LOGICA AGGIORNATA ---
 
             const embed = new EmbedBuilder()
                 .setColor('#FF0000') // YouTube Red
                 .setTitle(ch.snippet.title)
                 .setURL(`https://www.youtube.com/channel/${channelId}`) // Corrected YouTube channel link using channelId
                 .setThumbnail(ch.snippet.thumbnails.high.url)
-                .setDescription(description) // Ora usa la descrizione troncata
+                .setDescription(description) // Ora usa la descrizione troncata per righe
                 .addFields(
                     { 
-                        name: 'Videos uploaded', // English, as per the image
+                        name: 'Videos uploaded', // English
                         value: `${videoCount}`,
                         inline: true 
                     },
                     { 
-                        name: 'Views', // English, as per the image
+                        name: 'Views', // English
                         value: `${viewCount}`,
                         inline: true 
                     },
                     { 
-                        name: 'Subscribers', // English, as per the image
+                        name: 'Subscribers', // English
                         value: `${subscriberCount}`,
                         inline: true 
                     }
