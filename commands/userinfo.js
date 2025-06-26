@@ -17,13 +17,18 @@ module.exports = {
             }
         ]
     },
-    async execute(interaction, ephemeralReply) {
+    // Rimosso 'ephemeralReply' come parametro
+    async execute(interaction) { 
+        // Deferisce la risposta. Se vuoi che la risposta iniziale sia effimera, usa:
+        // await interaction.deferReply({ ephemeral: true });
+        // Per ora, lo lasciamo pubblico come nel tuo codice.
         await interaction.deferReply(); 
 
         // Questo check è per la restrizione ai moderatori.
         // Se vuoi che tutti possano usare il comando, rimuovi questo blocco 'if' e la riga 'default_member_permissions' sopra.
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-            return interaction.editReply(ephemeralReply('🚫 Solo i moderatori possono usare questo comando.'));
+            // Qui usiamo interaction.editReply con { ephemeral: true }
+            return interaction.editReply({ content: '🚫 Solo i moderatori possono usare questo comando.', ephemeral: true }); 
         }
 
         const targetUser = interaction.options.getUser('user'); // L'oggetto User
@@ -35,7 +40,7 @@ module.exports = {
         } catch (error) {
             console.error(`Errore nel recuperare il membro: ${error}`);
             // Se l'utente non è nel server o c'è un errore
-            return interaction.editReply(ephemeralReply('❌ Impossibile trovare l\'utente specificato in questo server.'));
+            return interaction.editReply({ content: '❌ Impossibile trovare l\'utente specificato in questo server.', ephemeral: true });
         }
 
         // Formatta la lista dei ruoli per essere colorata
