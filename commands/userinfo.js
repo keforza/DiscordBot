@@ -3,20 +3,20 @@ const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 
 module.exports = {
     data: {
-        name: 'userinfo',
-        description: 'Displays information about a user.',
+        name: 'userinfo', // Nome del comando rimane invariato per compatibilità Slash Commands
+        description: 'Mostra informazioni su un utente.', // Descrizione del comando in italiano
         // default_member_permissions: PermissionsBitField.Flags.ManageMessages.toString(), // Uncomment to restrict to moderators
         dm_permission: false,
         options: [
             {
-                name: 'user',
-                description: 'Select a user to view information about.',
+                name: 'user', // Nome dell'opzione rimane invariato
+                description: 'Seleziona un utente di cui visualizzare le informazioni.', // Descrizione dell'opzione in italiano
                 type: 6, // USER
                 required: true
             }
         ]
     },
-    async execute(interaction) { // Removed 'ephemeralReply' parameter
+    async execute(interaction) { 
         await interaction.deferReply(); 
 
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
@@ -58,13 +58,13 @@ module.exports = {
             .setTitle(`User Information 👤`)
             .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
             .addFields(
+                { name: 'Nickname', value: `\`${nickname}\``, inline: true },
                 { name: 'Username', value: `\`${targetUser.username}\``, inline: true },
                 { name: 'User ID', value: `\`${targetUser.id}\``, inline: true },
                 { name: 'Roles', value: roles.length > 0 ? `${rolesCount} - ${roles}` : 'None', inline: false },
-                { name: 'Nickname', value: `\`${nickname}\``, inline: true },
                 { name: 'Is Boosting', value: `\`${isBoosting}\``, inline: true },
-                { name: 'Account Created On', value: `\`${accountCreatedDate}\``, inline: false },
-                { name: 'Joined Server On', value: `\`${joinedServerDate}\``, inline: false }
+                { name: 'Joined Discord', value: `\`${accountCreatedDate}\``, inline: false },
+                { name: 'Joined Server', value: `\`${joinedServerDate}\``, inline: false }
             );
 
         await interaction.editReply({ embeds: [embed] });
