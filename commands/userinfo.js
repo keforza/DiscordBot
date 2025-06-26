@@ -61,7 +61,7 @@ module.exports = {
                 { name: 'Nickname', value: `\`${nickname}\``, inline: true },
                 { name: 'Username', value: `\`${targetUser.username}\``, inline: true },
                 { name: 'User ID', value: `\`${targetUser.id}\``, inline: true },
-                { name: 'Roles', value: roles.length > 0 ? `${rolesCount} - ${roles}` : 'None', inline: false },
+                { name: 'Roles', value: roles.length > 0 ? `${roles}` : 'None', inline: false },
                 { name: 'Is Boosting', value: `\`${isBoosting}\``, inline: true },
                 { name: 'Joined Discord', value: `\`${accountCreatedDate}\``, inline: false },
                 { name: 'Joined Server', value: `\`${joinedServerDate}\``, inline: false }
