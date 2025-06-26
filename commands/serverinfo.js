@@ -6,7 +6,7 @@ module.exports = {
         .setDescription('Mostra informazioni sul server corrente.'),
     async execute(interaction, ephemeralReply) {
         // --- QUESTO È IL CAMBIAMENTO FONDAMENTALE: Deferisce la risposta immediatamente ---
-        await interaction.deferReply({ ephemeral: false }); // Dice a Discord: "Sto elaborando, attendi."
+        await interaction.deferReply(); // Dice a Discord: "Sto elaborando, attendi." (Non è effimero per default)
 
         if (!interaction.guild) {
             // --- MODIFICATO: Usa editReply qui, perché l'interazione è già stata deferita ---
