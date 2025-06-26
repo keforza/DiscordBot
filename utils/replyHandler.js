@@ -1,4 +1,5 @@
 // utils/replyHandler.js
+const { MessageFlags } = require('discord.js'); // <--- AGGIUNGI QUESTA RIGA
 
 /**
  * Crea un oggetto di risposta effimera per Discord.
@@ -7,10 +8,10 @@
  * @returns {object} Un oggetto con le proprietà `content` o `embeds` e `flags` per una risposta effimera.
  */
 function ephemeralReply(contentOrEmbed) {
-    // Il flag 1 << 6 corrisponde a MessageFlags.Ephemeral
+    // Utilizziamo la costante MessageFlags.Ephemeral per chiarezza
     return typeof contentOrEmbed === 'string'
-        ? { content: contentOrEmbed, flags: 1 << 6 }
-        : { embeds: [contentOrEmbed], flags: 1 << 6 };
+        ? { content: contentOrEmbed, flags: MessageFlags.Ephemeral }
+        : { embeds: [contentOrEmbed], flags: MessageFlags.Ephemeral };
 }
 
 module.exports = {
