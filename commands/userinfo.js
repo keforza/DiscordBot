@@ -59,8 +59,8 @@ module.exports = {
                 { name: 'ID', value: targetUser.id, inline: true }, // Messo non inline per maggiore leggibilità
                 { name: 'Name', value: targetUser.username, inline: true }, // Nome utente Discord
                 { name: 'Nickname', value: targetMember.nickname || 'Nessuno', inline: true }, // Nickname nel server
-                { name: 'Joined Discord', value: `${targetUser.createdAt.toLocaleDateString('it-IT')})`, inline: true },
-                { name: 'Joined server', value: `${targetMember.joinedAt.toLocaleDateString('it-IT')})`, inline: true },
+                { name: 'Joined Discord', value: `${targetUser.createdAt.toLocaleDateString('it-IT')}`, inline: true },
+                { name: 'Joined server', value: `${targetMember.joinedAt.toLocaleDateString('it-IT')}`, inline: true },
                 { name: 'Roles', value: roles.length > 0 ? roles : 'Nessuno', inline: false }
             )
 
