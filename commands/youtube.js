@@ -49,7 +49,7 @@ module.exports = {
 
             // --- LOGICA AGGIORNATA PER TRONCARE LA DESCRIZIONE SOLO PER RIGHE ---
             let description = ch.snippet.description || 'No description available.';
-            const maxLines = 5; // Puoi cambiare questo a 4 se preferisci visualizzare solo 4 righe
+            const maxLines = 3; // Puoi cambiare questo a 4 se preferisci visualizzare solo 4 righe
 
             const lines = description.split('\n');
             
