@@ -51,7 +51,6 @@ module.exports = {
                     { name: 'Punteggio', value: anime.score ? String(anime.score) : 'N/D', inline: true }, // Tradotto
                     { name: 'Generi', value: anime.genres.map(g => g.name).join(', ') || 'N/D', inline: true } // Tradotto
                 )
-                .setFooter({ text: `Dati forniti da MyAnimeList (tramite Jikan API)` }); // Tradotto e rimosso .setTimestamp()
 
             await interaction.editReply({ embeds: [embed] });
 
