@@ -20,7 +20,8 @@ module.exports = {
     },
     async execute(interaction, ephemeralReply) {
         // --- NUOVA RIGA: Deferisce la risposta immediatamente (pubblica per default) ---
-        await interaction.deferReply({ ephemeral: false });
+        // Rimosso { ephemeral: false } dato che è il default e genera un warning
+        await interaction.deferReply(); 
 
         // Questo check è per la restrizione ai moderatori.
         // Se vuoi che tutti possano usare il comando, rimuovi questo blocco 'if'.
@@ -40,15 +41,11 @@ module.exports = {
             return interaction.editReply(ephemeralReply('❌ Impossibile trovare l\'utente specificato in questo server.'));
         }
 
-        // Calcola gli anni fa per "Joined Discord" e "Joined server"
-        const joinedDiscordYearsAgo = Math.floor((Date.now() - targetUser.createdAt.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-        const joinedServerYearsAgo = Math.floor((Date.now() - targetMember.joinedAt.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-
-        // Formatta la lista dei ruoli
+        // Formatta la lista dei ruoli per essere colorata
         const roles = targetMember.roles.cache
             .filter(role => role.name !== '@everyone') // Esclude il ruolo "@everyone"
             .sort((a, b) => b.position - a.position) // Ordina per posizione (i ruoli più alti prima)
-            .map(role => `\`@${role.name}\``) // Formatta come `@NomeRuolo`
+            .map(role => `<@&${role.id}>`) // CAMBIAMENTO FONDAMENTALE: Formatta come menzione di ruolo
             .join(', '); // Unisce con virgola e spazio
 
         const embed = new EmbedBuilder()
@@ -56,15 +53,15 @@ module.exports = {
             .setTitle(`Info Utente: @${targetUser.username}`) // Titolo come nell'immagine
             .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
             .addFields(
-                { name: 'ID', value: targetUser.id, inline: true }, // Messo non inline per maggiore leggibilità
-                { name: 'Name', value: targetUser.username, inline: true }, // Nome utente Discord
-                { name: 'Nickname', value: targetMember.nickname || 'Nessuno', inline: true }, // Nickname nel server
+                { name: 'ID', value: targetUser.id, inline: true },
+                { name: 'Name', value: targetUser.username, inline: true },
+                { name: 'Nickname', value: targetMember.nickname || 'Nessuno', inline: true },
                 { name: 'Joined Discord', value: `${targetUser.createdAt.toLocaleDateString('it-IT')}`, inline: true },
                 { name: 'Joined server', value: `${targetMember.joinedAt.toLocaleDateString('it-IT')}`, inline: true },
                 { name: 'Roles', value: roles.length > 0 ? roles : 'Nessuno', inline: false }
-            )
+            );
 
-        // --- MODIFICATO: Invia la risposta finale con l'embed, non più effimera ---
+        // Invia la risposta finale con l'embed
         await interaction.editReply({ embeds: [embed] });
     }
 };
