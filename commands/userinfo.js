@@ -4,82 +4,64 @@ const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 module.exports = {
     data: {
         name: 'userinfo',
-        description: 'Visualizza le info di un utente', 
-        // If you want ALL members to be able to use this command, remove this line:
+        description: 'Mostra informazioni su un utente',
+        // Lasciamo 'ManageMessages' come permesso predefinito se vuoi che solo i moderatori lo usino.
+        // Se vuoi che TUTTI i membri possano usarlo, rimuovi questa riga:
         // default_member_permissions: PermissionsBitField.Flags.ManageMessages.toString(),
         dm_permission: false,
         options: [
             {
                 name: 'user',
-                description: 'Digita un utente di cui vedere le info', 
+                description: 'Seleziona un utente di cui analizzare le informazioni',
                 type: 6, // USER
                 required: true
             }
         ]
     },
-    async execute(interaction) { 
+    async execute(interaction, ephemeralReply) {
+        // --- NUOVA RIGA: Deferisce la risposta immediatamente (pubblica per default) ---
+        // Rimosso { ephemeral: false } dato che è il default e genera un warning
         await interaction.deferReply(); 
 
-        // This check is for moderator restriction.
-        // If you want everyone to be able to use the command, remove this 'if' block and the 'default_member_permissions' line above.
+        // Questo check è per la restrizione ai moderatori.
+        // Se vuoi che tutti possano usare il comando, rimuovi questo blocco 'if'.
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-            return interaction.editReply({ content: '🚫 Only moderators can use this command.', ephemeral: true }); // English
+            return interaction.editReply(ephemeralReply('🚫 Solo i moderatori possono usare questo comando.'));
         }
 
-        const targetUser = interaction.options.getUser('user'); // The User object
-        let targetMember; // The GuildMember object
+        const targetUser = interaction.options.getUser('user'); // L'oggetto User
+        let targetMember; // L'oggetto GuildMember
 
         try {
-            // Attempt to fetch the GuildMember object for server-specific information
+            // Tenta di ottenere l'oggetto GuildMember per informazioni specifiche del server
             targetMember = await interaction.guild.members.fetch(targetUser.id);
         } catch (error) {
-            console.error(`Error fetching member: ${error}`); // English
-            // If the user is not in the server or there's an error
-            return interaction.editReply({ content: '❌ Unable to find the specified user in this server.', ephemeral: true }); // English
+            console.error(`Errore nel recuperare il membro: ${error}`);
+            // Se l'utente non è nel server o c'è un errore, gestisci di conseguenza
+            return interaction.editReply(ephemeralReply('❌ Impossibile trovare l\'utente specificato in questo server.'));
         }
 
-        // Format the list of roles to be colored
+        // Formatta la lista dei ruoli per essere colorata
         const roles = targetMember.roles.cache
-            .filter(role => role.name !== '@everyone') // Exclude the "@everyone" role
-            .sort((a, b) => b.position - a.position) // Sort by position (highest roles first)
-            .map(role => `<@&${role.id}>`) // Format as role mention to get color
-            .join(', '); // Join with comma and space
-
-        const rolesCount = targetMember.roles.cache.filter(role => role.name !== '@everyone').size;
-        
-        // Nickname
-        const nickname = targetMember.nickname || 'None'; // English
-
-        // Check if the user is boosting the server
-        const isBoosting = targetMember.premiumSince ? 'Yes' : 'No'; // English
-
-        // Format dates without "time ago"
-        const accountCreatedDate = targetUser.createdAt.toLocaleString('en-US', { // English locale
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit'
-        });
-
-        const joinedServerDate = targetMember.joinedAt.toLocaleString('en-US', { // English locale
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit'
-        });
+            .filter(role => role.name !== '@everyone') // Esclude il ruolo "@everyone"
+            .sort((a, b) => b.position - a.position) // Ordina per posizione (i ruoli più alti prima)
+            .map(role => `<@&${role.id}>`) // CAMBIAMENTO FONDAMENTALE: Formatta come menzione di ruolo
+            .join(', '); // Unisce con virgola e spazio
 
         const embed = new EmbedBuilder()
-            .setColor('#00AAFF') // Keeping original color
-            .setTitle(`User Information 👤`) // Title updated as per image (English)
-            .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 })) // Size for clarity
+            .setColor('#00AAFF') // Puoi cambiare questo colore se preferisci
+            .setTitle(`Info Utente: @${targetUser.username}`) // Titolo come nell'immagine
+            .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
             .addFields(
-                // Values are now wrapped in backticks (`) to create the copyable black boxes
-                { name: 'Username', value: `\`${targetUser.username}\``, inline: true }, // English
-                { name: 'User ID', value: `\`${targetUser.id}\``, inline: true }, // English
-                // Roles are not in black boxes in the image, so we leave them as mentions
-                { name: 'Roles', value: roles.length > 0 ? `${rolesCount} - ${roles}` : 'None', inline: false }, // English (count added)
-                { name: 'Nickname', value: `\`${nickname}\``, inline: true }, // English
-                { name: 'Is Boosting', value: `\`${isBoosting}\``, inline: true }, // English
-                { name: 'Account Created On', value: `\`${accountCreatedDate}\``, inline: false }, // English title and formatted date
-                { name: 'Joined Server On', value: `\`${joinedServerDate}\``, inline: false } // English title and formatted date
+                { name: 'ID', value: targetUser.id, inline: true },
+                { name: 'Name', value: targetUser.username, inline: true },
+                { name: 'Nickname', value: targetMember.nickname || 'Nessuno', inline: true },
+                { name: 'Joined Discord', value: `${targetUser.createdAt.toLocaleDateString('it-IT')}`, inline: true },
+                { name: 'Joined server', value: `${targetMember.joinedAt.toLocaleDateString('it-IT')}`, inline: true },
+                { name: 'Roles', value: roles.length > 0 ? roles : 'Nessuno', inline: false }
             );
 
+        // Invia la risposta finale con l'embed
         await interaction.editReply({ embeds: [embed] });
     }
 };
