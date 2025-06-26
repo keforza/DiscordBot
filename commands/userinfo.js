@@ -69,17 +69,16 @@ module.exports = {
             .setTitle(`Informazioni Utente 👤`) // Titolo aggiornato come nell'immagine
             .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 })) // Dimensione per chiarezza
             .addFields(
-                { name: 'Username', value: targetUser.username, inline: true },
-                { name: 'ID Utente', value: targetUser.id, inline: true },
-                { name: 'Ruoli', value: roles.length > 0 ? `${rolesCount} - ${roles}` : 'Nessuno', inline: false }, // Aggiunto il conteggio dei ruoli
-                { name: 'Nickname', value: nickname, inline: true },
-                { name: 'Sta boostando', value: isBoosting, inline: true },
-                { name: 'Unito a Discord (Creazione Account)', value: accountCreatedDate, inline: false }, // Titolo più descrittivo e data formattata
-                { name: 'Unito al Server', value: joinedServerDate, inline: false } // Titolo aggiornato e data formattata
+                // I valori sono ora avvolti in backticks (`) per creare i riquadri neri copiabili
+                { name: 'Username', value: `\`${targetUser.username}\``, inline: true },
+                { name: 'ID Utente', value: `\`${targetUser.id}\``, inline: true },
+                // I ruoli non sono in riquadri neri nell'immagine, quindi li lasciamo come menzioni
+                { name: 'Ruoli', value: roles.length > 0 ? `${rolesCount} - ${roles}` : 'Nessuno', inline: false }, 
+                { name: 'Nickname', value: `\`${nickname}\``, inline: true },
+                { name: 'Sta boostando', value: `\`${isBoosting}\``, inline: true },
+                { name: 'Unito a Discord (Creazione Account)', value: `\`${accountCreatedDate}\``, inline: false },
+                { name: 'Unito al Server', value: `\`${joinedServerDate}\``, inline: false }
             );
-
-        // La sezione "Global permissions" non era presente nel tuo codice e non è stata aggiunta.
-        // I valori nei campi Embed sono di default copiabili in Discord.
 
         await interaction.editReply({ embeds: [embed] });
     }
