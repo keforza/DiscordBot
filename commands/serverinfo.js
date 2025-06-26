@@ -13,7 +13,7 @@ module.exports = {
         const owner = await guild.fetchOwner(); // Ottiene l'oggetto proprietario per il tag
 
         const embed = new EmbedBuilder()
-            .setColor('#00800') //Colore verde
+            .setColor('#008000') //Colore verde
             .setTitle(`Info sul Server: ${guild.name}`)
             .setThumbnail(guild.iconURL({ dynamic: true, size: 256 })) // Icona del server
             .addFields(
