@@ -47,30 +47,38 @@ module.exports = {
                 minute: '2-digit'
             });
 
+            // --- NUOVA LOGICA PER TRONCARE LA DESCRIZIONE ---
+            let description = ch.snippet.description || 'No description available.';
+            const lines = description.split('\n');
+            const maxLines = 5; // Puoi cambiare questo valore a 4 se preferisci
+
+            if (lines.length > maxLines) {
+                description = lines.slice(0, maxLines).join('\n') + '...';
+            }
+            // --- FINE NUOVA LOGICA ---
+
             const embed = new EmbedBuilder()
                 .setColor('#FF0000') // YouTube Red
                 .setTitle(ch.snippet.title)
                 .setURL(`https://www.youtube.com/channel/${channelId}`) // Corrected YouTube channel link using channelId
                 .setThumbnail(ch.snippet.thumbnails.high.url)
-                .setDescription(ch.snippet.description || 'No description available.') // English
+                .setDescription(description) // Ora usa la descrizione troncata
                 .addFields(
-                    // Rimossa la scritta "Video Stats" e tolti i riquadri neri
                     { 
                         name: 'Videos uploaded', // English, as per the image
                         value: `${videoCount}`,
-                        inline: true // Mettiamo inline: true per i valori affiancati
+                        inline: true 
                     },
                     { 
                         name: 'Views', // English, as per the image
                         value: `${viewCount}`,
-                        inline: true // Mettiamo inline: true per i valori affiancati
+                        inline: true 
                     },
                     { 
                         name: 'Subscribers', // English, as per the image
                         value: `${subscriberCount}`,
-                        inline: true // Mettiamo inline: true per i valori affiancati
+                        inline: true 
                     }
-                    // La data 'Created' viene spostata nel footer
                 )
                 .setFooter({ text: `Created • ${createdAt}` }); // 'Created' moved to footer, as per image
 
