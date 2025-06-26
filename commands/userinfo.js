@@ -8,7 +8,7 @@ module.exports = {
         // Lasciamo 'ManageMessages' come permesso predefinito se vuoi che solo i moderatori lo usino.
         // Se vuoi che TUTTI i membri possano usarlo, rimuovi questa riga:
         // default_member_permissions: PermissionsBitField.Flags.ManageMessages.toString(),
-        dm_permission: true,
+        dm_permission: false,
         options: [
             {
                 name: 'user',
@@ -56,14 +56,13 @@ module.exports = {
             .setTitle(`Info Utente: @${targetUser.username}`) // Titolo come nell'immagine
             .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
             .addFields(
-                { name: 'ID', value: targetUser.id, inline: false }, // Messo non inline per maggiore leggibilità
+                { name: 'ID', value: targetUser.id, inline: true }, // Messo non inline per maggiore leggibilità
                 { name: 'Name', value: targetUser.username, inline: true }, // Nome utente Discord
                 { name: 'Nickname', value: targetMember.nickname || 'Nessuno', inline: true }, // Nickname nel server
-                { name: 'Joined Discord', value: `${targetUser.createdAt.toLocaleDateString('it-IT')} (${joinedDiscordYearsAgo} anni fa)`, inline: true },
+                { name: 'Joined Discord', value: `${targetUser.createdAt.toLocaleDateString('it-IT')} (${joinedDiscordYearsAgo} anni fa)`, inline: false },
                 { name: 'Joined server', value: `${targetMember.joinedAt.toLocaleDateString('it-IT')} (${joinedServerYearsAgo} anni fa)`, inline: true },
                 { name: 'Roles', value: roles.length > 0 ? roles : 'Nessuno', inline: false }
             )
-            .setTimestamp(); // Aggiunge il timestamp dell'embed
 
         // --- MODIFICATO: Invia la risposta finale con l'embed, non più effimera ---
         await interaction.editReply({ embeds: [embed] });
