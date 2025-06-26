@@ -49,7 +49,7 @@ module.exports = {
 
             // --- LOGICA AGGIORNATA PER TRONCARE LA DESCRIZIONE SOLO PER RIGHE ---
             let description = ch.snippet.description || 'No description available.';
-            const maxLines = 3; // Puoi cambiare questo a 4 se preferisci visualizzare solo 4 righe
+            const maxLines = 1; // Puoi cambiare questo a 4 se preferisci visualizzare solo 4 righe
 
             const lines = description.split('\n');
             
@@ -68,17 +68,17 @@ module.exports = {
                     { 
                         name: 'Videos uploaded', // English
                         value: `${videoCount}`,
-                        inline: true 
+                        inline: false 
                     },
                     { 
                         name: 'Views', // English
                         value: `${viewCount}`,
-                        inline: true 
+                        inline: false 
                     },
                     { 
                         name: 'Subscribers', // English
                         value: `${subscriberCount}`,
-                        inline: true 
+                        inline: false 
                     }
                 )
                 .setFooter({ text: `Created • ${createdAt}` }); // 'Created' moved to footer, as per image
