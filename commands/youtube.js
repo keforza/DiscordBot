@@ -37,8 +37,8 @@ module.exports = {
                 .addFields(
                     { name: '📅 Creato il', value: new Date(ch.snippet.publishedAt).toLocaleDateString('it-IT'), inline: true },
                     { name: '👥 Iscritti', value: Number(ch.statistics.subscriberCount).toLocaleString('it-IT'), inline: true },
-                    { name: '📺 Video totali', value: Number(ch.statistics.videoCount).toLocaleString('it-IT'), inline: true },
-                    { name: 'Profilo YouTube', value: `[${ch.snippet.title}](https://www.youtube.com/channel/${channelId})` } // Correzione del link
+                    { name: '🎞️ Video totali', value: Number(ch.statistics.videoCount).toLocaleString('it-IT'), inline: true },
+                    { name: '<:K3_youtube:1291444793058267256> Profilo YouTube', value: `[${ch.snippet.title}](https://www.youtube.com/channel/${channelId})` } // Correzione del link
                 );
 
             await interaction.reply({ embeds: [embed] });
