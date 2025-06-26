@@ -15,9 +15,7 @@ module.exports = {
             }
         ]
     },
-    // Removed 'ephemeralReply' as a parameter
     async execute(interaction) {
-        // Defer the reply to give time for API calls, making it visible to everyone by default
         await interaction.deferReply(); 
 
         const search = interaction.options.getString('search');
@@ -26,7 +24,6 @@ module.exports = {
             const ytData = await ytRes.json();
 
             if (!ytData.items?.length) {
-                // Use editReply since we already deferred
                 return interaction.editReply({ content: '❌ YouTube channel not found.', ephemeral: true }); // English
             }
 
@@ -39,9 +36,9 @@ module.exports = {
             // Format numbers for better readability (e.g., 1,234,567)
             const subscriberCount = Number(ch.statistics.subscriberCount).toLocaleString('en-US');
             const videoCount = Number(ch.statistics.videoCount).toLocaleString('en-US');
-            const viewCount = Number(ch.statistics.viewCount).toLocaleString('en-US'); // Assuming total views are available in statistics
+            const viewCount = Number(ch.statistics.viewCount).toLocaleString('en-US');
 
-            // Format creation date
+            // Format creation date for footer
             const createdAt = new Date(ch.snippet.publishedAt).toLocaleString('en-US', {
                 day: '2-digit',
                 month: '2-digit',
@@ -53,27 +50,34 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#FF0000') // YouTube Red
                 .setTitle(ch.snippet.title)
-                .setURL(`https://www.youtube.com/channel/${channelId}`) // Corrected YouTube channel link
+                .setURL(`https://www.youtube.com/channel/${channelId}`) // Corrected YouTube channel link using channelId
                 .setThumbnail(ch.snippet.thumbnails.high.url)
                 .setDescription(ch.snippet.description || 'No description available.') // English
                 .addFields(
+                    // Rimossa la scritta "Video Stats" e tolti i riquadri neri
                     { 
-                        name: 'Video Stats', // A single field to group stats like the image
-                        value: `**Videos uploaded:** \`${videoCount}\`\n**Views:** \`${viewCount}\`\n**Subscribers:** \`${subscriberCount}\``,
-                        inline: false 
+                        name: 'Videos uploaded', // English, as per the image
+                        value: `${videoCount}`,
+                        inline: true // Mettiamo inline: true per i valori affiancati
                     },
                     { 
-                        name: 'Created', // English
-                        value: `\`${createdAt}\``, 
-                        inline: false 
+                        name: 'Views', // English, as per the image
+                        value: `${viewCount}`,
+                        inline: true // Mettiamo inline: true per i valori affiancati
+                    },
+                    { 
+                        name: 'Subscribers', // English, as per the image
+                        value: `${subscriberCount}`,
+                        inline: true // Mettiamo inline: true per i valori affiancati
                     }
-                );
+                    // La data 'Created' viene spostata nel footer
+                )
+                .setFooter({ text: `Created • ${createdAt}` }); // 'Created' moved to footer, as per image
 
-            await interaction.editReply({ embeds: [embed] }); // Use editReply since we deferred
+            await interaction.editReply({ embeds: [embed] });
 
         } catch (err) {
             console.error('❌ YouTube API Error:', err.message); // English
-            // Use editReply since we deferred
             await interaction.editReply({ content: `🚫 YouTube Error: ${err.message}`, ephemeral: true }); // English
         }
     }
