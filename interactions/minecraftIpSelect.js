@@ -39,8 +39,7 @@ module.exports = {
             .setColor(color)
             .setTitle(title)
             .setDescription(description)
-            .setImage('https://cdn.discordapp.com/attachments/1338470846154543134/1388071543669522462/server_Minecraft.png?ex=685fa5dd&is=685e545d&hm=9d81694716f1dde9387e60579df30ad97bc09157a1149cd4c1f8cb31bfa0204f&');
-            
+                        
         // Aggiungi la thumbnail solo se l'URL è definito
         if (thumbnailUrl) {
             embed.setThumbnail(thumbnailUrl);
