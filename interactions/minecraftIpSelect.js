@@ -47,7 +47,6 @@ module.exports = {
 
         // La logica di editReply rimane la stessa, dato che l'ephemeral è già gestito da deferReply con le flags
         await interaction.editReply({ 
-            content: 'Ecco le informazioni richieste:', 
             embeds: [embed], 
             components: [], // Rimuovi i componenti per pulire il messaggio di risposta
         });
