@@ -3,7 +3,7 @@ const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, Collection } = re
 const fs = require('node:fs');
 const path = require('node:path');
 const { ephemeralReply } = require('./utils/replyHandler'); // Importa la funzione helper
-const http = require('node:http'); // <<< AGGIUNTA QUESTA LINEA
+const http = require('node:http');
 
 const client = new Client({
     intents: [
@@ -54,7 +54,7 @@ client.once('ready', async () => {
 
 client.on('interactionCreate', async (interaction) => {
     // Gestione dei comandi Slash (ChatInputCommand)
-    if (interaction.isChatInputCommand()) { // Usa isChatInputCommand per i comandi slash
+    if (interaction.isChatInputCommand()) {
         if (interaction.user.bot) return;
 
         const command = client.commands.get(interaction.commandName);
@@ -65,7 +65,6 @@ client.on('interactionCreate', async (interaction) => {
         }
 
         try {
-            // Passa l'interazione e la funzione ephemeralReply al comando
             await command.execute(interaction, ephemeralReply);
         } catch (error) {
             console.error('Errore nell\'esecuzione del comando:', error);
@@ -76,26 +75,20 @@ client.on('interactionCreate', async (interaction) => {
             }
         }
     } 
-    // ================================================================
-    // NUOVA SEZIONE PER GESTIRE LE SELEZIONI DEI DROPDOWN MENU (StringSelectMenu)
-    // ================================================================
-    else if (interaction.isStringSelectMenu()) { // Controlla se l'interazione è un Select Menu
-        // Verifica se l'ID personalizzato del dropdown corrisponde a quello che abbiamo definito nel comando /minecraftip
+    // Gestione delle interazioni dei dropdown menu (StringSelectMenu)
+    else if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'minecraft_edition_select') { 
-            // Riconosci l'interazione per evitare errori "Interaction Failed", ma senza mostrare "Thinking..."
             await interaction.deferUpdate(); 
 
-            // Ottieni il valore selezionato dall'utente (i dropdown restituiscono un array, prendiamo il primo elemento)
             const selectedEdition = interaction.values[0]; 
 
-            const serverIP = 'kappiani.falixsrv.me'; // L'indirizzo IP del server
-            const bedrockPort = '30862'; // La porta specifica per Bedrock
+            const serverIP = 'kappiani.falixsrv.me';
+            const bedrockPort = '30862';
 
             let title = '';
             let description = '';
-            const color = '#2ECC71'; // Colore verde per l'embed
-
-            // Logica per determinare la risposta in base all'edizione scelta
+            const color = '#2ECC71'; 
+            
             switch (selectedEdition) {
                 case 'java':
                     title = 'Minecraft Java Edition IP';
@@ -103,7 +96,8 @@ client.on('interactionCreate', async (interaction) => {
                     break;
                 case 'bedrock':
                     title = 'Minecraft Bedrock Edition IP & Porta';
-                    description = `Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: ${serverIP}\nPorta: **${bedrockPort}**`;
+                    // MODIFICA APPLICATA QUI IN PRECEDENZA E CONFERMATA
+                    description = `Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP}\`\nPorta: **${bedrockPort}**`;
                     break;
                 default:
                     title = 'Errore';
@@ -111,35 +105,28 @@ client.on('interactionCreate', async (interaction) => {
                     break;
             }
 
-            // Costruisci l'embed con le informazioni sull'IP
             const embed = new EmbedBuilder()
                 .setColor(color)
                 .setTitle(title)
                 .setDescription(description)
-                .setThumbnail('https://cdn.discordapp.com/attachments/1291444793058267256/1291444793058267256/minecraft_logo.png'); // Sostituisci con il tuo URL del logo
+                .setThumbnail('https://cdn.discordapp.com/attachments/1291444793058267256/1291444793058267256/minecraft_logo.png');
 
-            // Modifica il messaggio originale del dropdown con l'embed contenente l'IP.
-            // Rimuoviamo anche il dropdown dal messaggio originale per pulizia.
             await interaction.editReply({ 
-                content: 'Ecco le informazioni richieste:', // Puoi mettere un testo qui o lasciarlo vuoto
+                content: 'Ecco le informazioni richieste:', 
                 embeds: [embed], 
-                components: [] // Importante: rimuove il dropdown dopo la selezione
+                components: [] 
             });
         }
     }
-    // ================================================================
-    // FINE SEZIONE DI GESTIONE DEI DROPDOWN MENU
-    // ================================================================
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 
-// <<< AGGIUNTA QUESTA SEZIONE PER IL SERVER HTTP
-const PORT = process.env.PORT || 3000; // Render imposterà process.env.PORT automaticamente
+const PORT = process.env.PORT || 3000;
 
 http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Bot is alive!'); // Messaggio di conferma per il ping
+    res.end('Bot is alive!');
 }).listen(PORT, () => {
     console.log(`✅ Server HTTP in ascolto sulla porta ${PORT}`);
 });
