@@ -26,7 +26,7 @@ module.exports = {
             case 'bedrock':
                 title = 'Minecraft Bedrock Edition IP & Porta';
                 // Qui mostriamo l'IP e la porta effettivi
-                description = `Connettiti al server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP.toUpperCase()}\`\nPorta: \`**${bedrockPort}**\``;
+                description = `Connettiti al server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP.toUpperCase()}\`\nPorta: **\`${bedrockPort}\`**`;
                 break;
             default:
                 title = 'Errore';
