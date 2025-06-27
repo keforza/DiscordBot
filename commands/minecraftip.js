@@ -38,8 +38,8 @@ module.exports = {
             .setColor('#3498DB') // Un colore esadecimale per il bordo dell'embed
             .setTitle('Server Minecraft') // Titolo dell'embed
             .setDescription(
-                '**Il server Kappiani è un server dedicato a tutti i follower di K3Forza; all\'interno di questo server potrete giocare con amici e anche gente che non conoscete una vera e propria Vanilla Minecraft.\n' +
-                'Da notare che il server è CROSS-PLATFORM e quindi non vi dovete minimamente preoccupare su quale versione state giocando. Detto questo vi auguro una buona permanenza :)**'
+                'Il server Kappiani è un server dedicato a tutti i follower di K3Forza; all\'interno di questo server potrete giocare con amici e anche gente che non conoscete una vera e propria Vanilla Minecraft.\n' +
+                'Da notare che il server è CROSS-PLATFORM e quindi non vi dovete minimamente preoccupare su quale versione state giocando. Detto questo vi auguro una buona permanenza :)'
             )
             .setImage('https://cdn.discordapp.com/attachments/1338470846154543134/1388071543669522462/server_Minecraft.png?ex=685fa5dd&is=685e545d&hm=9d81694716f1dde9387e60579df30ad97bc09157a1149cd4c1f8cb31bfa0204f&')
             .setFooter({ text: 'Seleziona l\'edizione del server Minecraft dal menu a tendina qui sotto:' }); // Testo nel footer
