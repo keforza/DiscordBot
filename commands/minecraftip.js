@@ -30,8 +30,9 @@ module.exports = {
         const row = new ActionRowBuilder()
             .addComponents(select);
 
+        // --- MODIFICA QUI: Aggiunto '\n' all'inizio del content ---
         await interaction.editReply({ 
-            content: 'Seleziona l\'edizione del server Minecraft:',
+            content: '\nSeleziona l\'edizione del server Minecraft:', // Aggiunto il carattere di nuova riga
             components: [row] 
         });
     },
