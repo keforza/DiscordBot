@@ -19,13 +19,13 @@ module.exports = {
         
         switch (selectedEdition) {
             case 'java':
-                title = 'Minecraft Java Edition IP';
-                description = `Connettiti al server Java usando questo indirizzo:\n\n**\`${serverIP.toUpperCase()}:${serverPort}\`**`;
+                title = 'Minecraft Java Edition';
+                description = `Connettiti al server Java:\n\n**\`${serverIP.toUpperCase()}:${serverPort}\`**`;
                 thumbnailUrl = 'https://cdn.discordapp.com/attachments/1338470846154543134/1388125898997497896/minecraft_java.png?ex=685fd87c&is=685e86fc&hm=dec8bafe9ee9a72c2f53afc00976d234f35d26078a7f5fb919f4de5cc0c04e99&'; // Thumbnail per Java
                 break;
             case 'bedrock':
-                title = 'Minecraft Bedrock Edition IP & Porta';
-                description = `Connettiti al server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: **\`${serverIP.toUpperCase()}\`**\nPorta: **\`${serverPort}\`**`;
+                title = 'Minecraft Bedrock Edition';
+                description = `Connettiti al server Bedrock:\n\nIndirizzo IP: **\`${serverIP.toUpperCase()}\`**\nPorta: **\`${serverPort}\`**`;
                 thumbnailUrl = 'https://cdn.discordapp.com/attachments/1338470846154543134/1388125898686857349/minecraft_bedrock.png?ex=685fd87c&is=685e86fc&hm=e589e6b39a646cc796c49b31c2c82bf398476a70ed0cc0b8aa5d0ca830a25e20&'; // Thumbnail per Bedrock
                 break;
             default:
