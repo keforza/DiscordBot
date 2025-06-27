@@ -21,12 +21,12 @@ module.exports = {
             case 'java':
                 title = 'Minecraft Java Edition IP';
                 // *** MODIFICA EFFETTUATA QUI: AGGIUNTA LA PORTA PER JAVA ***
-                description = `Connettiti al server Java usando questo indirizzo:\n\n\`${serverIP.toUpperCase()}:${bedrockPort}\``;
+                description = `Connettiti al server Java usando questo indirizzo:\n\n**\`${serverIP.toUpperCase()}:${bedrockPort}\`**`;
                 break;
             case 'bedrock':
                 title = 'Minecraft Bedrock Edition IP & Porta';
                 // Qui mostriamo l'IP e la porta effettivi
-                description = `Connettiti al server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP.toUpperCase()}\`\nPorta: **\`${bedrockPort}\`**`;
+                description = `Connettiti al server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: **\`${serverIP.toUpperCase()}\`**\nPorta: **\`${bedrockPort}\`**`;
                 break;
             default:
                 title = 'Errore';
