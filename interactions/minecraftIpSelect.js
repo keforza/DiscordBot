@@ -18,11 +18,11 @@ module.exports = {
         switch (selectedEdition) {
             case 'java':
                 title = 'Minecraft Java Edition IP';
-                description = `Connettiti al nostro server Java usando questo indirizzo:\n\n\`${serverIP.toUpperCase()}\``;
+                description = `**Connettiti al nostro server Java usando questo indirizzo:**\n\n\`${serverIP.toUpperCase()}\``;
                 break;
             case 'bedrock':
                 title = 'Minecraft Bedrock Edition IP & Porta';
-                description = `Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP.toUpperCase()}\`\nPorta: \`**${bedrockPort}**\``;
+                description = `**Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo:** \`${serverIP.toUpperCase()}\`\nPorta: \`${bedrockPort}\``;
                 break;
             default:
                 title = 'Errore';
@@ -34,7 +34,7 @@ module.exports = {
             .setColor(color)
             .setTitle(title)
             .setDescription(description)
-            .setThumbnail('https://cdn.discordapp.com/attachments/1291444793058267256/1291444793058267256/minecraft_logo.png');
+            .setThumbnail('https://cdn.discordapp.com/attachments/1338470846154543134/1388071543669522462/server_Minecraft.png?ex=685fa5dd&is=685e545d&hm=9d81694716f1dde9387e60579df30ad97bc09157a1149cd4c1f8cb31bfa0204f&');
 
         // Invia la risposta effimera all'utente
         await interaction.followUp({ 
