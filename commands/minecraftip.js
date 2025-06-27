@@ -1,57 +1,40 @@
 // commands/minecraftip.js
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 
 module.exports = {
     data: {
         name: 'minecraftip',
-        description: 'Invia l\'indirizzo IP del server Minecraft per Java o Bedrock.',
-        options: [
-            {
-                name: 'edizione',
-                description: 'Scegli l\'edizione di Minecraft (Java o Bedrock).',
-                type: 3, // STRING
-                required: true,
-                choices: [
-                    { name: 'Java Edition', value: 'java' },
-                    { name: 'Bedrock Edition', value: 'bedrock' }
-                ]
-            }
-        ]
+        description: 'Seleziona l\'edizione di Minecraft per visualizzare l\'IP.',
     },
     async execute(interaction) {
-        // Deferisci la risposta, rendendola PUBBLICA (visibile a tutti)
-        await interaction.deferReply(); // Rimosso { ephemeral: true }
+        // Deferisci la risposta, sarà pubblica (visibile a tutti)
+        await interaction.deferReply(); 
 
-        const edition = interaction.options.getString('edizione');
+        // Crea le opzioni per il dropdown (Select Menu)
+        const select = new StringSelectMenuBuilder()
+            .setCustomId('minecraft_edition_select') // Questo ID è cruciale! Lo useremo per identificarlo nel gestore.
+            .setPlaceholder('Scegli l\'edizione di Minecraft...'); // Testo predefinito mostrato nel menu
 
-        const serverIP = 'kappiani.falixsrv.me';
-        const bedrockPort = '30862';
+        // Aggiungi le opzioni "Java Edition" e "Bedrock Edition" al dropdown
+        select.addOptions(
+            new StringSelectMenuOptionBuilder()
+                .setLabel('Minecraft Java Edition')
+                .setDescription('Mostra l\'indirizzo IP per Minecraft Java.')
+                .setValue('java'), // Il valore che verrà inviato quando selezionato
+            new StringSelectMenuOptionBuilder()
+                .setLabel('Minecraft Bedrock Edition')
+                .setDescription('Mostra l\'indirizzo IP e la porta per Minecraft Bedrock.')
+                .setValue('bedrock'), // Il valore che verrà inviato quando selezionato
+        );
 
-        let title = '';
-        let description = '';
-        const color = '#2ECC71';
+        // Crea una ActionRow per contenere il dropdown. I componenti devono essere in ActionRow.
+        const row = new ActionRowBuilder()
+            .addComponents(select);
 
-        switch (edition) {
-            case 'java':
-                title = 'Minecraft Java Edition IP';
-                description = `Connettiti al nostro server Java usando questo indirizzo:\n\n\`${serverIP.toUpperCase()}\``;
-                break;
-            case 'bedrock':
-                title = 'Minecraft Bedrock Edition IP & Porta';
-                description = `Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: ${serverIP}\nPorta: **${bedrockPort}**`;
-                break;
-            default:
-                title = 'Errore';
-                description = 'Selezione dell\'edizione non valida.';
-                break;
-        }
-
-        const embed = new EmbedBuilder()
-            .setColor(color)
-            .setTitle(title)
-            .setDescription(description)
-            .setThumbnail('https://cdn.discordapp.com/attachments/1291444793058267256/1291444793058267256/minecraft_logo.png'); // Sostituisci con il tuo URL del logo
-
-        await interaction.editReply({ embeds: [embed] });
+        // Invia il messaggio che contiene il dropdown
+        await interaction.editReply({ 
+            content: 'Seleziona l\'edizione del server Minecraft:',
+            components: [row] // Qui passiamo la ActionRow con il dropdown
+        });
     },
 };
