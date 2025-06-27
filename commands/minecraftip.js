@@ -19,12 +19,10 @@ module.exports = {
         select.addOptions(
             new StringSelectMenuOptionBuilder()
                 .setLabel('Minecraft Java Edition')
-                // Java: IP tutto in maiuscolo per la descrizione del dropdown
                 .setDescription(`Mostra l'indirizzo IP per Minecraft Java: ${serverIP.toUpperCase()}`)
                 .setValue('java'), 
             new StringSelectMenuOptionBuilder()
                 .setLabel('Minecraft Bedrock Edition')
-                // Bedrock: IP tutto in maiuscolo e porta con descrizione per il dropdown
                 .setDescription(`Mostra l'indirizzo IP e la porta per Minecraft Bedrock: ${serverIP.toUpperCase()} (Porta: ${bedrockPort})`)
                 .setValue('bedrock'), 
         );

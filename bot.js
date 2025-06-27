@@ -78,6 +78,7 @@ client.on('interactionCreate', async (interaction) => {
     // Gestione delle interazioni dei dropdown menu (StringSelectMenu)
     else if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'minecraft_edition_select') { 
+            // deferUpdate() per riconoscere l'interazione sul dropdown senza modificare il messaggio originale
             await interaction.deferUpdate(); 
 
             const selectedEdition = interaction.values[0]; 
@@ -92,12 +93,10 @@ client.on('interactionCreate', async (interaction) => {
             switch (selectedEdition) {
                 case 'java':
                     title = 'Minecraft Java Edition IP';
-                    // IP Java tutto in maiuscolo e in backtick
                     description = `Connettiti al nostro server Java usando questo indirizzo:\n\n\`${serverIP.toUpperCase()}\``;
                     break;
                 case 'bedrock':
                     title = 'Minecraft Bedrock Edition IP & Porta';
-                    // IP Bedrock tutto in maiuscolo e in backtick, Porta in backtick e grassetto
                     description = `Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP.toUpperCase()}\`\nPorta: \`**${bedrockPort}**\``;
                     break;
                 default:
@@ -112,10 +111,12 @@ client.on('interactionCreate', async (interaction) => {
                 .setDescription(description)
                 .setThumbnail('https://cdn.discordapp.com/attachments/1291444793058267256/1291444793058267256/minecraft_logo.png');
 
-            await interaction.editReply({ 
+            // --- MODIFICA CHIAVE QUI: Uso followUp invece di editReply e rendo la risposta effimera ---
+            // Il messaggio originale con il dropdown non viene più modificato
+            await interaction.followUp({ 
                 content: 'Ecco le informazioni richieste:', 
                 embeds: [embed], 
-                components: [] 
+                ephemeral: true // Rende questa risposta visibile solo all'utente
             });
         }
     }
