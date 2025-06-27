@@ -20,7 +20,7 @@ module.exports = {
         switch (selectedEdition) {
             case 'java':
                 title = 'Minecraft Java Edition IP';
-                description = `Connettiti al server Java usando questo indirizzo:\n\n**\`${serverIP.toUpperCase()}:${serverPort}\`**\n(Ricorda di specificare la porta **${serverPort}** perché non è quella standard.)`;
+                description = `Connettiti al server Java usando questo indirizzo:\n\n**\`${serverIP.toUpperCase()}:${serverPort}\`**`;
                 break;
             case 'bedrock':
                 title = 'Minecraft Bedrock Edition IP & Porta';
