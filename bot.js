@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, Collection, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, Collection } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 const { ephemeralReply } = require('./utils/replyHandler');
@@ -14,8 +14,10 @@ const client = new Client({
     ]
 });
 
-client.commands = new Collection();
+client.commands = new Collection(); // Per i comandi slash
+client.selectMenus = new Collection(); // NUOVO: Per i gestori dei Select Menu
 
+// Caricamento dei Comandi Slash dalla cartella 'commands'
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
@@ -28,6 +30,22 @@ for (const file of commandFiles) {
         console.warn(`[AVVISO] Il comando a ${filePath} manca di una proprietà "data" o "execute" richiesta.`);
     }
 }
+
+// NUOVO: Caricamento dei Gestori dei Select Menu dalla cartella 'interactions'
+const interactionsPath = path.join(__dirname, 'interactions');
+const interactionFiles = fs.readdirSync(interactionsPath).filter(file => file.endsWith('.js'));
+
+for (const file of interactionFiles) {
+    const filePath = path.join(interactionsPath, file);
+    const selectMenuHandler = require(filePath);
+    // Assicurati che l'handler abbia un customId e un metodo execute
+    if ('customId' in selectMenuHandler && 'execute' in selectMenuHandler) {
+        client.selectMenus.set(selectMenuHandler.customId, selectMenuHandler);
+    } else {
+        console.warn(`[AVVISO] Il gestore di select menu a ${filePath} manca di una proprietà "customId" o "execute" richiesta.`);
+    }
+}
+
 
 client.once('ready', async () => {
     console.log(`✅ Bot Online come ${client.user.tag}!`);
@@ -51,6 +69,7 @@ client.once('ready', async () => {
 });
 
 client.on('interactionCreate', async (interaction) => {
+    // Gestione dei comandi Slash (ChatInputCommand)
     if (interaction.isChatInputCommand()) {
         if (interaction.user.bot) return;
 
@@ -72,78 +91,30 @@ client.on('interactionCreate', async (interaction) => {
             }
         }
     } 
+    // NUOVO: Gestione dei Select Menu (Component Interactions)
     else if (interaction.isStringSelectMenu()) {
-        if (interaction.customId === 'minecraft_edition_select') { 
-            await interaction.deferUpdate(); 
+        // Cerca il gestore nella Collection selectMenus usando il customId
+        const selectMenuHandler = client.selectMenus.get(interaction.customId);
 
-            const selectedEdition = interaction.values[0]; 
+        if (!selectMenuHandler) {
+            console.warn(`Nessun gestore trovato per il select menu con customId: ${interaction.customId}`);
+            return interaction.deferUpdate(); // Riconosci l'interazione per evitare errori, anche se non c'è un handler specifico
+        }
 
-            const serverIP = 'kappiani.falixsrv.me';
-            const bedrockPort = '30862';
-
-            let title = '';
-            let description = '';
-            const color = '#2ECC71'; 
-            
-            switch (selectedEdition) {
-                case 'java':
-                    title = 'Minecraft Java Edition IP';
-                    description = `Connettiti al nostro server Java usando questo indirizzo:\n\n\`${serverIP.toUpperCase()}\``;
-                    break;
-                case 'bedrock':
-                    title = 'Minecraft Bedrock Edition IP & Porta';
-                    description = `Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP.toUpperCase()}\`\nPorta: \`**${bedrockPort}**\``;
-                    break;
-                default:
-                    title = 'Errore';
-                    description = 'Selezione non valida.';
-                    break;
+        try {
+            await selectMenuHandler.execute(interaction); // Esegui il gestore del select menu
+        } catch (error) {
+            console.error('Errore nell\'esecuzione del gestore del select menu:', error);
+            // Gestione errori per i componenti (es. se la deferUpdate fallisce o followUp)
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp(ephemeralReply('C\'è stato un errore nell\'elaborazione della tua selezione!'));
+            } else {
+                // Questo caso è meno probabile per i select menu che usano deferUpdate()
+                console.error('Interazione del select menu non gestita correttamente dopo l\'errore.');
             }
-
-            const embed = new EmbedBuilder()
-                .setColor(color)
-                .setTitle(title)
-                .setDescription(description)
-                .setThumbnail('https://cdn.discordapp.com/attachments/1291444793058267256/1291444793058267256/minecraft_logo.png');
-
-            // Invia la risposta effimera all'utente che ha fatto la selezione
-            await interaction.followUp({ 
-                content: 'Ecco le informazioni richieste:', 
-                embeds: [embed], 
-                ephemeral: true 
-            });
-
-            // --- NUOVA LOGICA PER RESETTARE IL DROPDOWN NEL MESSAGGIO ORIGINALE ---
-            // Ricrea il Select Menu con le opzioni e il placeholder, ma senza valore pre-selezionato
-            const resetSelect = new StringSelectMenuBuilder()
-                .setCustomId('minecraft_edition_select')
-                .setPlaceholder('Scegli l\'edizione di Minecraft...');
-
-            const ipForDesc = 'kappiani.falixsrv.me'; // Per le descrizioni del dropdown
-            const portForDesc = '30862';
-
-            resetSelect.addOptions(
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Minecraft Java Edition')
-                    .setDescription(`Mostra l'indirizzo IP per Minecraft Java: ${ipForDesc.toUpperCase()}`)
-                    .setValue('java'),
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Minecraft Bedrock Edition')
-                    .setDescription(`Mostra l'indirizzo IP e la porta per Minecraft Bedrock: ${ipForDesc.toUpperCase()} (Porta: ${portForDesc})`)
-                    .setValue('bedrock'),
-            );
-
-            const resetRow = new ActionRowBuilder()
-                .addComponents(resetSelect);
-
-            // Modifica il messaggio originale per resettare il dropdown
-            await interaction.message.edit({
-                components: [resetRow]
-            });
-            // --- FINE NUOVA LOGICA ---
-
         }
     }
+    // Puoi aggiungere altri `else if` per button.isButton(), isModalSubmit() ecc.
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
