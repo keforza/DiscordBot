@@ -1,12 +1,12 @@
 // interactions/minecraftIpSelect.js
-const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageFlags } = require('discord.js');
+// ^^^ IMPORTANTE: Ho aggiunto MessageFlags qui!
 
 module.exports = {
     customId: 'minecraft_edition_select', 
     async execute(interaction) {
-        // CAMBIO CHIAVE QUI: Usiamo deferReply con ephemeral: true
-        // per indicare che la risposta successiva sarà un nuovo messaggio privato.
-        await interaction.deferReply({ ephemeral: true }); 
+        // CAMBIO CHIAVE QUI: Usiamo le Flags per il messaggio effimero
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral }); 
 
         const serverIP = 'kappiani.serveminecraft.net'; 
         const serverPort = '30862'; 
@@ -38,17 +38,14 @@ module.exports = {
             .setDescription(description)
             .setThumbnail('https://cdn.discordapp.com/attachments/1338470846154543134/1388071543669522462/server_Minecraft.png?ex=685fa5dd&is=685e545d&hm=9d81694716f1dde9387e60579df30ad97bc09157a1149cd4c1f8cb31bfa0204f&');
 
-        // CAMBIO CHIAVE QUI: Usiamo editReply perché abbiamo deferito l'interazione con deferReply.
-        // Questo aggiornerà il messaggio "Il bot sta pensando..." con le informazioni.
+        // La logica di editReply rimane la stessa, dato che l'ephemeral è già gestito da deferReply con le flags
         await interaction.editReply({ 
             content: 'Ecco le informazioni richieste:', 
             embeds: [embed], 
-            components: [], // Rimuove i componenti dal messaggio privato di risposta
-            // ephemeral: true non serve qui, è già gestito da deferReply
+            components: [], 
         });
 
         // --- Logica per resettare il dropdown nel messaggio ORIGINALE ---
-        // Questa parte è separata dalla risposta effimera e si occupa di ripristinare il menu nel messaggio iniziale.
         const resetSelectMenu = new StringSelectMenuBuilder()
             .setCustomId('minecraft_edition_select') 
             .setPlaceholder('Scegli l\'edizione di Minecraft...');
@@ -68,15 +65,12 @@ module.exports = {
             .addComponents(resetSelectMenu);
 
         try {
-            // Qui modifichiamo il messaggio originale del comando /minecraftip.
-            // È importante che 'interaction.message' sia il messaggio da modificare.
             await interaction.message.edit({
                 components: [resetActionRow]
             });
             console.log('Dropdown resettato con successo.');
         } catch (error) {
             console.error('Errore durante il reset del dropdown:', error);
-            // Questo errore può avvenire se il messaggio originale è stato cancellato o non è accessibile.
         }
     },
 };
