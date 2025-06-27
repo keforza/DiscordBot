@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, Collection, ActivityType } = require('discord.js'); // Added ActivityType here!
 const fs = require('node:fs');
 const path = require('node:path');
 const { ephemeralReply } = require('./utils/replyHandler');
@@ -49,6 +49,13 @@ for (const file of interactionFiles) {
 
 client.once('ready', async () => {
     console.log(`✅ Bot Online come ${client.user.tag}!`);
+
+    // --- IMPOSTAZIONE ATTIVITÀ DEL BOT QUI ---
+    client.user.setActivity('kappiani.serveminecraft.net', { type: ActivityType.Playing });
+    // Puoi anche provare altre opzioni come:
+    // client.user.setActivity('la community di Kappiani', { type: ActivityType.Watching });
+    // client.user.setActivity('Benvenuti su Kappiani! ✨', { type: ActivityType.Custom });
+    // --- FINE IMPOSTAZIONE ATTIVITÀ ---
 
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
 
