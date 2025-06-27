@@ -92,12 +92,13 @@ client.on('interactionCreate', async (interaction) => {
             switch (selectedEdition) {
                 case 'java':
                     title = 'Minecraft Java Edition IP';
+                    // IP Java tutto in maiuscolo e in backtick
                     description = `Connettiti al nostro server Java usando questo indirizzo:\n\n\`${serverIP.toUpperCase()}\``;
                     break;
                 case 'bedrock':
                     title = 'Minecraft Bedrock Edition IP & Porta';
-                    // MODIFICA APPLICATA QUI IN PRECEDENZA E CONFERMATA
-                    description = `Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP}\`\nPorta: **${bedrockPort}**`;
+                    // IP Bedrock tutto in maiuscolo e in backtick, Porta in backtick e grassetto
+                    description = `Connettiti al nostro server Bedrock usando questo indirizzo e porta:\n\nIndirizzo: \`${serverIP.toUpperCase()}\`\nPorta: \`**${bedrockPort}**\``;
                     break;
                 default:
                     title = 'Errore';

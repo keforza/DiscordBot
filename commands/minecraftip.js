@@ -10,22 +10,22 @@ module.exports = {
         await interaction.deferReply(); 
 
         const select = new StringSelectMenuBuilder()
-            .setCustomId('minecraft_edition_select') // Questo ID deve corrispondere a quello in index.js
+            .setCustomId('minecraft_edition_select')
             .setPlaceholder('Scegli l\'edizione di Minecraft...');
 
-        // Inizializza l'IP per le descrizioni delle opzioni
         const serverIP = 'kappiani.falixsrv.me'; 
         const bedrockPort = '30862';
 
         select.addOptions(
             new StringSelectMenuOptionBuilder()
                 .setLabel('Minecraft Java Edition')
-                .setDescription('Mostra l\'indirizzo IP per Minecraft Java: ' + serverIP.toUpperCase()) // Descrizione Java
+                // Java: IP tutto in maiuscolo per la descrizione del dropdown
+                .setDescription(`Mostra l'indirizzo IP per Minecraft Java: ${serverIP.toUpperCase()}`)
                 .setValue('java'), 
             new StringSelectMenuOptionBuilder()
                 .setLabel('Minecraft Bedrock Edition')
-                // MODIFICA QUI: Aggiunto il backtick all'IP Bedrock nella descrizione del dropdown
-                .setDescription(`Mostra l\'indirizzo IP e la porta per Minecraft Bedrock: ${serverIP} (Porta: ${bedrockPort})`) // Descrizione Bedrock
+                // Bedrock: IP tutto in maiuscolo e porta con descrizione per il dropdown
+                .setDescription(`Mostra l'indirizzo IP e la porta per Minecraft Bedrock: ${serverIP.toUpperCase()} (Porta: ${bedrockPort})`)
                 .setValue('bedrock'), 
         );
 
