@@ -19,11 +19,11 @@ module.exports = {
         select.addOptions(
             new StringSelectMenuOptionBuilder()
                 .setLabel('Minecraft Java Edition')
-                .setDescription(`Mostra l'indirizzo IP per Minecraft Java: ${serverIP.toUpperCase()}`)
+                .setDescription(`Mostra l'indirizzo IP per Minecraft Java`)
                 .setValue('java'), 
             new StringSelectMenuOptionBuilder()
                 .setLabel('Minecraft Bedrock Edition')
-                .setDescription(`Mostra l'indirizzo IP e la porta per Minecraft Bedrock: ${serverIP.toUpperCase()} (Porta: ${bedrockPort})`)
+                .setDescription(`Mostra l'indirizzo IP e la porta per Minecraft Bedrock`)
                 .setValue('bedrock'), 
         );
 
