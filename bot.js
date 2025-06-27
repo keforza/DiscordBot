@@ -1,8 +1,8 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, Collection, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
-const { ephemeralReply } = require('./utils/replyHandler'); // Importa la funzione helper
+const { ephemeralReply } = require('./utils/replyHandler');
 const http = require('node:http');
 
 const client = new Client({
@@ -14,17 +14,16 @@ const client = new Client({
     ]
 });
 
-client.commands = new Collection(); // Inizializza la Collection dei comandi
+client.commands = new Collection();
 
-const commandsPath = path.join(__dirname, 'commands'); // Percorso alla cartella 'commands'
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js')); // Leggi i file .js
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
-    const command = require(filePath); // Importa il file del comando
-    // Controlla che il comando abbia le proprietà 'data' e 'execute'
+    const command = require(filePath);
     if ('data' in command && 'execute' in command) {
-        client.commands.set(command.data.name, command); // Aggiungi il comando alla Collection
+        client.commands.set(command.data.name, command);
     } else {
         console.warn(`[AVVISO] Il comando a ${filePath} manca di una proprietà "data" o "execute" richiesta.`);
     }
@@ -35,7 +34,6 @@ client.once('ready', async () => {
 
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
 
-    // Raccogli tutti i dati dei comandi dalla Collection per registrarli
     const commandsToRegister = [];
     for (const command of client.commands.values()) {
         commandsToRegister.push(command.data);
@@ -53,7 +51,6 @@ client.once('ready', async () => {
 });
 
 client.on('interactionCreate', async (interaction) => {
-    // Gestione dei comandi Slash (ChatInputCommand)
     if (interaction.isChatInputCommand()) {
         if (interaction.user.bot) return;
 
@@ -75,10 +72,8 @@ client.on('interactionCreate', async (interaction) => {
             }
         }
     } 
-    // Gestione delle interazioni dei dropdown menu (StringSelectMenu)
     else if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'minecraft_edition_select') { 
-            // deferUpdate() per riconoscere l'interazione sul dropdown senza modificare il messaggio originale
             await interaction.deferUpdate(); 
 
             const selectedEdition = interaction.values[0]; 
@@ -111,13 +106,42 @@ client.on('interactionCreate', async (interaction) => {
                 .setDescription(description)
                 .setThumbnail('https://cdn.discordapp.com/attachments/1291444793058267256/1291444793058267256/minecraft_logo.png');
 
-            // --- MODIFICA CHIAVE QUI: Uso followUp invece di editReply e rendo la risposta effimera ---
-            // Il messaggio originale con il dropdown non viene più modificato
+            // Invia la risposta effimera all'utente che ha fatto la selezione
             await interaction.followUp({ 
                 content: 'Ecco le informazioni richieste:', 
                 embeds: [embed], 
-                ephemeral: true // Rende questa risposta visibile solo all'utente
+                ephemeral: true 
             });
+
+            // --- NUOVA LOGICA PER RESETTARE IL DROPDOWN NEL MESSAGGIO ORIGINALE ---
+            // Ricrea il Select Menu con le opzioni e il placeholder, ma senza valore pre-selezionato
+            const resetSelect = new StringSelectMenuBuilder()
+                .setCustomId('minecraft_edition_select')
+                .setPlaceholder('Scegli l\'edizione di Minecraft...');
+
+            const ipForDesc = 'kappiani.falixsrv.me'; // Per le descrizioni del dropdown
+            const portForDesc = '30862';
+
+            resetSelect.addOptions(
+                new StringSelectMenuOptionBuilder()
+                    .setLabel('Minecraft Java Edition')
+                    .setDescription(`Mostra l'indirizzo IP per Minecraft Java: ${ipForDesc.toUpperCase()}`)
+                    .setValue('java'),
+                new StringSelectMenuOptionBuilder()
+                    .setLabel('Minecraft Bedrock Edition')
+                    .setDescription(`Mostra l'indirizzo IP e la porta per Minecraft Bedrock: ${ipForDesc.toUpperCase()} (Porta: ${portForDesc})`)
+                    .setValue('bedrock'),
+            );
+
+            const resetRow = new ActionRowBuilder()
+                .addComponents(resetSelect);
+
+            // Modifica il messaggio originale per resettare il dropdown
+            await interaction.message.edit({
+                components: [resetRow]
+            });
+            // --- FINE NUOVA LOGICA ---
+
         }
     }
 });
