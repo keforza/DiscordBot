@@ -11,7 +11,7 @@ module.exports = {
         // Calculate the roundtrip latency (from command sent to bot processing)
         const generalLatency = Date.now() - interaction.createdTimestamp;
 
-        const replyContent = `Pong! 🏓\nGeneral Latency: \`${generalLatency}ms\``;
+        const replyContent = `Pong! 🏓\n Latency: \`${generalLatency}ms\``;
 
         await interaction.editReply(ephemeralReply(replyContent));
     },
