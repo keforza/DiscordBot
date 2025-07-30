@@ -1,50 +1,44 @@
-// commands/delete.js
 const { PermissionsBitField } = require('discord.js');
 
 module.exports = {
     data: {
         name: 'delete',
-        description: 'Cancella un numero di messaggi (solo moderatori)',
+        description: 'Deletes a number of messages (moderators only)',
         default_member_permissions: PermissionsBitField.Flags.ManageMessages.toString(),
         dm_permission: false,
         options: [
             {
                 name: 'count',
-                description: 'Numero di messaggi da eliminare (max 100)',
-                type: 4, // INTEGER
+                description: 'Number of messages to delete (max 100)',
+                type: 4,
                 required: true
             }
         ]
     },
     async execute(interaction, ephemeralReply) {
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-            return interaction.reply(ephemeralReply('🚫 Solo i moderatori possono usare questo comando.'));
+            return interaction.reply(ephemeralReply('🚫 Only moderators can use this command.'));
         }
 
         const count = interaction.options.getInteger('count');
         if (count < 1 || count > 100) {
-            return interaction.reply(ephemeralReply('❌ Puoi eliminare da 1 a 100 messaggi alla volta.'));
+            return interaction.reply(ephemeralReply('❌ You can delete between 1 and 100 messages at a time.'));
         }
 
-        // Fetch messages + 1 per includere il comando delete stesso
         const messages = await interaction.channel.messages.fetch({ limit: count + 1 });
         const deletableMessages = messages.filter(msg => msg.deletable);
 
         if (deletableMessages.size === 0) {
-            return interaction.reply(ephemeralReply('Non ci sono messaggi recenti eliminabili nella quantità specificata.'));
+            return interaction.reply(ephemeralReply('No recent deletable messages found in the specified amount.'));
         }
 
         try {
-            // Elimina i messaggi, escludendo il messaggio del comando se non è necessario eliminarlo
-            // Se vuoi eliminare anche il comando, usa deletableMessages
-            // Se vuoi solo i messaggi precedenti, filtra messages e poi .delete() il comando.
             await interaction.channel.bulkDelete(deletableMessages, true);
-            // Il messaggio di risposta è effimero per non essere eliminato
-            await interaction.reply(ephemeralReply(`✅ Eliminati ${deletableMessages.size - 1} messaggi.`)); // -1 perché il comando stesso potrebbe essere stato incluso
+            await interaction.reply(ephemeralReply(`✅ Deleted ${deletableMessages.size - 1} messages.`));
 
         } catch (error) {
-            console.error('Errore nell\'eliminazione dei messaggi:', error);
-            await interaction.reply(ephemeralReply('❌ Errore durante l\'eliminazione dei messaggi. Assicurati che il bot abbia i permessi necessari e che i messaggi non siano troppo vecchi (Discord non permette di eliminare messaggi più vecchi di 14 giorni in bulk).'));
+            console.error(error);
+            await interaction.reply(ephemeralReply('❌ Error deleting messages. Make sure the bot has the necessary permissions and messages are not too old (Discord does not allow bulk deletion of messages older than 14 days).'));
         }
     }
 };

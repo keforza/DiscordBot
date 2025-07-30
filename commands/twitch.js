@@ -1,15 +1,15 @@
 // commands/twitch.js
 const { EmbedBuilder } = require('discord.js');
-const fetch = require('node-fetch'); // Assicurati che node-fetch sia installato e importato
+const fetch = require('node-fetch'); // Make sure node-fetch is installed and imported
 
 module.exports = {
     data: {
         name: 'twitch',
-        description: 'Cerca uno streamer su twitch',
+        description: 'Searches for a streamer on Twitch',
         options: [
             {
                 name: 'search',
-                description: 'Digita il nome dello/della streamer da cercare',
+                description: 'Type the name of the streamer to search for',
                 type: 3, // STRING
                 required: true
             }
@@ -41,23 +41,23 @@ module.exports = {
             const userData = await userRes.json();
             const user = userData.data[0];
 
-            if (!user) return interaction.reply(ephemeralReply('❌ Streamer non trovato.'));
+            if (!user) return interaction.reply(ephemeralReply('❌ Streamer not found.'));
 
             const embed = new EmbedBuilder()
-                .setColor('#9146FF')
+                .setColor('#9146FF') // Twitch's brand color
                 .setTitle(user.display_name)
                 .setThumbnail(user.profile_image_url)
-                .setDescription(user.description || 'Nessuna descrizione disponibile.')
+                .setDescription(user.description || 'No description available.')
                 .addFields(
-                    { name: '📅 Creato il', value: new Date(user.created_at).toLocaleDateString('it-IT'), inline: true },
-                    { name: '<:K3_twitch:1291444671192629298> Profilo Twitch', value: `[${user.display_name}](https://www.twitch.tv/${user.login})` }
+                    { name: '📅 Created On', value: new Date(user.created_at).toLocaleDateString('en-US'), inline: true }, // Changed locale to 'en-US' for English formatting
+                    { name: '<:K3_twitch:1291444671192629298> Twitch Profile', value: `[${user.display_name}](https://www.twitch.tv/${user.login})` }
                 );
 
-            await interaction.reply({ embeds: [embed] }); // Non è un comando di moderazione, quindi non effimero
+            await interaction.reply({ embeds: [embed] }); // Not a moderation command, so not ephemeral
 
         } catch (err) {
-            console.error('❌ Errore Twitch API:', err.message);
-            await interaction.reply(ephemeralReply(`🚫 Errore Twitch: ${err.message}`));
+            console.error('❌ Twitch API Error:', err.message);
+            await interaction.reply(ephemeralReply(`🚫 Twitch Error: ${err.message}`));
         }
     }
 };

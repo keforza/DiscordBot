@@ -1,90 +1,90 @@
 // commands/manga.js
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
-const fetch = require('node-fetch'); // Importa la libreria per fare richieste HTTP
+const fetch = require('node-fetch'); // Import the library for making HTTP requests
 
 module.exports = {
-    // Definizione dei dati del comando slash
+    // Definition of the slash command data
     data: new SlashCommandBuilder()
         .setName('manga')
-        .setDescription('Cerca un manga su MangaDex.')
+        .setDescription('Searches for a manga on MangaDex.')
         .addStringOption(option =>
-            option.setName('titolo')
-                .setDescription('Il titolo del manga da cercare.')
+            option.setName('title')
+                .setDescription('The title of the manga to search for.')
                 .setRequired(true)),
     
-    // Logica di esecuzione del comando
+    // Command execution logic
     async execute(interaction) {
-        // Ottiene il titolo del manga dall'opzione fornita dall'utente
-        const query = interaction.options.getString('titolo');
+        // Get the manga title from the option provided by the user
+        const query = interaction.options.getString('title');
         
-        // Rispondi immediatamente per mostrare che il bot sta elaborando
-        // Il comportamento predefinito di deferReply è non-effimero, quindi non serve specificare flags per questo caso.
+        // Respond immediately to show that the bot is processing
+        // The default behavior of deferReply is non-ephemeral, so no need to specify flags for this case.
         await interaction.deferReply(); 
 
         try {
-            // Effettua la richiesta all'API di MangaDex per cercare il manga
+            // Make the request to the MangaDex API to search for the manga
             const response = await fetch(`https://api.mangadex.org/manga?limit=1&title=${encodeURIComponent(query)}`);
             
-            // Controlla se la richiesta API ha avuto successo
+            // Check if the API request was successful
             if (!response.ok) {
-                // Se la risposta non è OK (es. errore 404, 500), invia un messaggio di errore
-                await interaction.editReply(`❌ Errore durante la ricerca: ${response.status} ${response.statusText}`);
-                return; // Termina l'esecuzione della funzione
+                // If the response is not OK (e.g., 404, 500 error), send an error message
+                await interaction.editReply(`❌ Error during search: ${response.status} ${response.statusText}`);
+                return; // Terminate function execution
             }
 
-            const data = await response.json(); // Parsa il corpo della risposta come oggetto JSON
+            const data = await response.json(); // Parse the response body as a JSON object
 
-            // Controlla se sono stati trovati manga nell'array 'data' della risposta
+            // Check if any manga were found in the 'data' array of the response
             if (data.data && data.data.length > 0) {
-                const manga = data.data[0]; // Prende il primo risultato trovato
+                const manga = data.data[0]; // Take the first result found
                 
-                // Estrai le informazioni del manga, fornendo fallback se non disponibili
-                const titoloManga = manga.attributes.title.en || manga.attributes.title.ja || 'Titolo non disponibile';
-                const descrizione = manga.attributes.description.en || 'Nessuna descrizione disponibile.';
+                // Extract manga information, providing fallbacks if not available
+                const mangaTitle = manga.attributes.title.en || manga.attributes.title.ja || 'Title not available';
+                const description = manga.attributes.description.en || 'No description available.';
                 
-                // Cerca l'ID dell'immagine di copertina nelle relazioni del manga
-                const idCopertina = manga.relationships.find(rel => rel.type === 'cover_art')?.id;
-                let coverUrl = 'https://mangadex.org/img/avatar.png'; // Immagine di copertina predefinita
+                // Search for the cover image ID in the manga's relationships
+                const coverId = manga.relationships.find(rel => rel.type === 'cover_art')?.id;
+                let coverUrl = 'https://mangadex.org/img/avatar.png'; // Default cover image
 
-                // Se è stato trovato un ID della copertina, fai una seconda richiesta API per ottenere il nome del file
-                if (idCopertina) {
-                    const coverResponse = await fetch(`https://api.mangadex.org/cover/${idCopertina}`);
+                // If a cover ID was found, make a second API request to get the file name
+                if (coverId) {
+                    const coverResponse = await fetch(`https://api.mangadex.org/cover/${coverId}`);
                     const coverData = await coverResponse.json();
-                    // Se i dati della copertina sono validi, costruisci l'URL completo
+                    // If the cover data is valid, construct the full URL
                     if (coverData.data && coverData.data.attributes.fileName) {
                         coverUrl = `https://uploads.mangadex.org/covers/${manga.id}/${coverData.data.attributes.fileName}`;
                     }
                 }
 
-                // Crea un Embed per visualizzare le informazioni del manga in modo accattivante
+                // Create an Embed to display the manga information in an appealing way
                 const mangaEmbed = new EmbedBuilder()
-                    .setColor(0x0099FF) // Colore della barra laterale dell'embed (un blu esadecimale)
-                    .setTitle(titoloManga) // Titolo dell'embed
-                    .setURL(`https://mangadex.org/title/${manga.id}`) // Link al manga su MangaDex
+                    .setColor(0x0099FF) // Embed sidebar color (a hexadecimal blue)
+                    .setTitle(mangaTitle) // Embed title
+                    .setURL(`https://mangadex.org/title/${manga.id}`) // Link to the manga on MangaDex
                     .setDescription(
-                        // Tronca la descrizione se è troppo lunga, altrimenti usala intera
-                        descrizione.length > 200 ? descrizione.substring(0, 197) + '...' : descrizione
+                        // Truncate the description if too long, otherwise use it in full
+                        description.length > 200 ? description.substring(0, 197) + '...' : description
                     )
-                    .setThumbnail(coverUrl) // Imposta l'immagine di copertina come thumbnail
-                    .addFields( // Aggiunge campi di informazione all'embed
-                        { name: 'Stato', value: manga.attributes.status || 'Sconosciuto', inline: true }, // 'inline: true' li mette sulla stessa riga
-                        { name: 'Anno di Pubblicazione', value: manga.attributes.year?.toString() || 'Sconosciuto', inline: true },
-                        { name: 'Valutazione Contenuto', value: manga.attributes.contentRating || 'Sconosciuto', inline: true }
+                    .setThumbnail(coverUrl) // Set the cover image as the thumbnail
+                    .addFields( // Add information fields to the embed
+                        { name: 'Status', value: manga.attributes.status || 'Unknown', inline: true }, // 'inline: true' places them on the same line
+                        { name: 'Publication Year', value: manga.attributes.year?.toString() || 'Unknown', inline: true },
+                        { name: 'Content Rating', value: manga.attributes.contentRating || 'Unknown', inline: true }
                     )
-                    .setFooter({ text: 'Powered by MangaDex API' }) // Testo nel footer dell'embed
-                    .setTimestamp(); // Aggiunge il timestamp attuale al footer
+                    .setFooter({ text: 'Powered by MangaDex API' }) // Footer text for the embed
+                    .setTimestamp(); // Add the current timestamp to the footer
 
-                // Invia l'embed come risposta, sostituendo il messaggio "bot sta pensando..."
+                // Send the embed as a reply, replacing the "bot is thinking..." message
                 await interaction.editReply({ embeds: [mangaEmbed] }); 
             } else {
-                // Se nessun manga è stato trovato, invia un messaggio di notifica
-                await interaction.editReply(`🔍 Nessun manga trovato per "${query}".`);
+                // If no manga was found, send a notification message
+                await interaction.editReply(`🔍 No manga found for "${query}".`);
             }
 
         } catch (error) {
-            // Gestione degli errori generici che possono verificarsi durante la richiesta o l'elaborazione
-            console.error('Errore durante la ricerca del manga:', error); // Stampa l'errore nella console del bot per debugging
-            await interaction.editReply('❌ Si è verificato un errore durante la ricerca del manga. Riprova più tardi.'); // Avvisa l'utente
+            // Generic error handling that may occur during the request or processing
+            console.error('Error during manga search:', error); // Print the error to the bot's console for debugging
+            await interaction.editReply('❌ An error occurred while searching for the manga. Please try again later.'); // Notify the user
         }
     }
 };

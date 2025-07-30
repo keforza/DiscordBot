@@ -1,15 +1,14 @@
-// commands/pokemon.js
 const { EmbedBuilder } = require('discord.js');
 const fetch = require('node-fetch');
 
 module.exports = {
     data: {
         name: 'pokemon',
-        description: 'Cerca informazioni su un Pokémon',
+        description: 'Searches for information about a Pokémon',
         options: [
             {
                 name: 'name',
-                description: 'Nome del pokémon da cercare',
+                description: 'Name of the Pokémon to search for',
                 type: 3, // STRING
                 required: true
             }
@@ -19,11 +18,11 @@ module.exports = {
         const name = interaction.options.getString('name').toLowerCase();
         try {
             const pokeRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-            if (!pokeRes.ok) return interaction.reply(ephemeralReply('❌ Pokémon non trovato. Controlla il nome e riprova.'));
+            if (!pokeRes.ok) return interaction.reply(ephemeralReply('❌ Pokémon not found. Check the name and try again.'));
             const pokeData = await pokeRes.json();
 
             const speciesRes = await fetch(pokeData.species.url);
-            if (!speciesRes.ok) return interaction.reply(ephemeralReply('❌ Impossibile recuperare dati specie per questo Pokémon.'));
+            if (!speciesRes.ok) return interaction.reply(ephemeralReply('❌ Could not retrieve species data for this Pokémon.'));
             const speciesData = await speciesRes.json();
 
             const generation = speciesData.generation.name
@@ -38,17 +37,17 @@ module.exports = {
                 .setTitle(`${pokeData.name.charAt(0).toUpperCase() + pokeData.name.slice(1)} (#${pokeData.id})`)
                 .setThumbnail(pokeData.sprites.front_default)
                 .addFields(
-                    { name: 'Tipo', value: types, inline: true },
-                    { name: 'Altezza', value: `${pokeData.height / 10} m`, inline: true },
-                    { name: 'Peso', value: `${pokeData.weight / 10} kg`, inline: true },
-                    { name: 'Generazione', value: generation, inline: true }
+                    { name: 'Type', value: types, inline: true },
+                    { name: 'Height', value: `${pokeData.height / 10} m`, inline: true },
+                    { name: 'Weight', value: `${pokeData.weight / 10} kg`, inline: true },
+                    { name: 'Generation', value: generation, inline: true }
                 );
 
             await interaction.reply({ embeds: [embed] });
 
         } catch (err) {
-            console.error('❌ Errore Pokémon API:', err.message);
-            await interaction.reply(ephemeralReply(`🚫 Errore Pokémon: ${err.message}`));
+            console.error('❌ Pokémon API Error:', err.message);
+            await interaction.reply(ephemeralReply(`🚫 Pokémon Error: ${err.message}`));
         }
     }
 };

@@ -4,52 +4,52 @@ const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMen
 module.exports = {
     data: {
         name: 'minecraftip',
-        description: 'Seleziona l\'edizione di Minecraft per visualizzare l\'IP.',
+        description: 'Select the Minecraft edition to view the IP.',
     },
     async execute(interaction) {
-        // Defer della risposta iniziale, come sempre
+        // Defer the initial reply, as always
         await interaction.deferReply(); 
 
-        // Creazione del Select Menu (dropdown)
+        // Create the Select Menu (dropdown)
         const select = new StringSelectMenuBuilder()
             .setCustomId('minecraft_edition_select')
-            .setPlaceholder('Scegli l\'edizione di Minecraft...');
+            .setPlaceholder('Choose Minecraft Edition...');
 
-        // Le tue variabili IP e porta (non usate direttamente nel dropdown, ma servono per le descrizioni se volessi)
+        // Your IP and port variables (not directly used in the dropdown, but useful for descriptions if you wanted)
         const serverIP = 'kappiani.serveminecraft.net';
         const bedrockPort = '30862';
 
         select.addOptions(
             new StringSelectMenuOptionBuilder()
                 .setLabel('Minecraft Java Edition')
-                .setDescription(`Mostra l'indirizzo IP per Minecraft Java`)
+                .setDescription(`Displays the IP address for Minecraft Java`)
                 .setValue('java'), 
             new StringSelectMenuOptionBuilder()
                 .setLabel('Minecraft Bedrock Edition')
-                .setDescription(`Mostra l'indirizzo IP e la porta per Minecraft Bedrock`)
+                .setDescription(`Displays the IP address and port for Minecraft Bedrock`)
                 .setValue('bedrock'), 
         );
 
         const row = new ActionRowBuilder()
             .addComponents(select);
 
-        // --- EMBED AGGIORNATO CON NUOVA DESCRIZIONE E FOOTER ---
+        // --- UPDATED EMBED WITH NEW DESCRIPTION AND FOOTER ---
         const initialEmbed = new EmbedBuilder()
-            .setColor('#3498DB') // Un colore esadecimale per il bordo dell'embed
-            .setTitle('Server Minecraft') // Titolo dell'embed
+            .setColor('#3498DB') // A hexadecimal color for the embed border
+            .setTitle('Minecraft Server') // Embed title
             .setDescription(
-                'Il server Kappiani è un server dedicato a tutti i follower di K3Forza; all\'interno di questo server potrete giocare con amici e anche gente che non conoscete una vera e propria Vanilla Minecraft.\n' +
-                'Da notare che il server è CROSS-PLATFORM e quindi non vi dovete minimamente preoccupare su quale versione state giocando. Detto questo vi auguro una buona permanenza :)'
+                'The Kappiani server is dedicated to all K3Forza followers; within this server, you can play a true Minecraft Vanilla with friends and even people you don\'t know.\n' +
+                'It\'s worth noting that the server is CROSS-PLATFORM, so you don\'t have to worry at all about which version you\'re playing. That said, I wish you a good stay :)'
             )
             .setImage('https://cdn.discordapp.com/attachments/1338470846154543134/1388071543669522462/server_Minecraft.png?ex=685fa5dd&is=685e545d&hm=9d81694716f1dde9387e60579df30ad97bc09157a1149cd4c1f8cb31bfa0204f&')
-            .setFooter({ text: 'Seleziona l\'edizione del server Minecraft dal menu a tendina qui sotto:' }); // Testo nel footer
-        // --- FINE AGGIORNAMENTO EMBED ---
+            .setFooter({ text: 'Select the Minecraft server edition from the dropdown menu below:' }); // Footer text
+        // --- END EMBED UPDATE ---
 
-        // Aggiorna la risposta con l'embed e i componenti
+        // Update the reply with the embed and components
         await interaction.editReply({ 
-            content: '', // Il contenuto testuale diretto può essere vuoto se il testo è nell'embed
-            embeds: [initialEmbed], // Passa l'embed che hai appena creato
-            components: [row] // Passa la ActionRow con il dropdown
+            content: '', // Direct textual content can be empty if the text is in the embed
+            embeds: [initialEmbed], // Pass the embed you just created
+            components: [row] // Pass the ActionRow with the dropdown
         });
     },
 };
