@@ -1,7 +1,18 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, Collection, ActivityType } = require('discord.js'); // Added ActivityType here!
+const {
+    Client,
+    GatewayIntentBits,
+    EmbedBuilder,
+    REST,
+    Routes,
+    Collection,
+    ActivityType,
+    MessageFlags // <-- AGGIUNTO MessageFlags qui!
+} = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
+// Assicurati che il file './utils/replyHandler.js' sia aggiornato per usare MessageFlags.Ephemeral
+// Vedi la nota sotto per il contenuto di ephemeralReply se non l'hai già modificato.
 const { ephemeralReply } = require('./utils/replyHandler');
 const http = require('node:http');
 
@@ -15,7 +26,7 @@ const client = new Client({
 });
 
 client.commands = new Collection(); // Per i comandi slash
-client.selectMenus = new Collection(); // NUOVO: Per i gestori dei Select Menu
+client.selectMenus = new Collection(); // Per i gestori dei Select Menu
 
 // Caricamento dei Comandi Slash dalla cartella 'commands'
 const commandsPath = path.join(__dirname, 'commands');
@@ -31,7 +42,7 @@ for (const file of commandFiles) {
     }
 }
 
-// NUOVO: Caricamento dei Gestori dei Select Menu dalla cartella 'interactions'
+// Caricamento dei Gestori dei Select Menu dalla cartella 'interactions'
 const interactionsPath = path.join(__dirname, 'interactions');
 const interactionFiles = fs.readdirSync(interactionsPath).filter(file => file.endsWith('.js'));
 
@@ -45,7 +56,6 @@ for (const file of interactionFiles) {
         console.warn(`[AVVISO] Il gestore di select menu a ${filePath} manca di una proprietà "customId" o "execute" richiesta.`);
     }
 }
-
 
 client.once('ready', async () => {
     console.log(`✅ Bot Online come ${client.user.tag}!`);
@@ -78,27 +88,40 @@ client.once('ready', async () => {
 client.on('interactionCreate', async (interaction) => {
     // Gestione dei comandi Slash (ChatInputCommand)
     if (interaction.isChatInputCommand()) {
-        if (interaction.user.bot) return;
+        if (interaction.user.bot) return; // Ignora le interazioni dei bot
 
         const command = client.commands.get(interaction.commandName);
 
         if (!command) {
             console.warn(`Comando non trovato: ${interaction.commandName}`);
-            return interaction.reply(ephemeralReply('❌ Questo comando non è stato trovato o è obsoleto.'));
+            // Modificato per usare flags e gestire i casi in cui l'interazione è già stata riconosciuta.
+            // Se non è ancora stata deferrata/risposto, invia una nuova risposta.
+            if (!interaction.deferred && !interaction.replied) {
+                return interaction.reply({ content: '❌ Questo comando non è stato trovato o è obsoleto.', flags: MessageFlags.Ephemeral });
+            } else {
+                // Se è già stata riconosciuta, ma il comando non è valido, usa followUp per non causare errori.
+                // Questo è un caso limite, ma lo gestiamo per robustezza.
+                return interaction.followUp({ content: '❌ Questo comando non è stato trovato o è obsoleto. (Gia\' riconosciuto)', flags: MessageFlags.Ephemeral });
+            }
         }
 
         try {
             await command.execute(interaction, ephemeralReply);
         } catch (error) {
             console.error('Errore nell\'esecuzione del comando:', error);
+            // --- MODIFICHE CHIAVE QUI per gestire l'errore "Interaction has already been acknowledged" ---
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp(ephemeralReply('C\'è stato un errore nell\'esecuzione di questo comando!'));
+                // Se l'interazione è già stata deferrata o a cui è già stata risposto,
+                // dobbiamo usare followUp per inviare un messaggio aggiuntivo.
+                await interaction.followUp({ content: 'C\'è stato un errore nell\'esecuzione di questo comando!', flags: MessageFlags.Ephemeral });
             } else {
-                await interaction.reply(ephemeralReply('C\'è stato un errore nell\'esecuzione di questo comando!'));
+                // Se l'interazione NON è stata ancora riconosciuta (es. deferReply nel comando ha fallito),
+                // allora possiamo usare reply per inviare la prima risposta.
+                await interaction.reply({ content: 'C\'è stato un errore nell\'esecuzione di questo comando!', flags: MessageFlags.Ephemeral });
             }
         }
-    } 
-    // NUOVO: Gestione dei Select Menu (Component Interactions)
+    }
+    // Gestione dei Select Menu (Component Interactions)
     else if (interaction.isStringSelectMenu()) {
         // Cerca il gestore nella Collection selectMenus usando il customId
         const selectMenuHandler = client.selectMenus.get(interaction.customId);
@@ -113,11 +136,13 @@ client.on('interactionCreate', async (interaction) => {
         } catch (error) {
             console.error('Errore nell\'esecuzione del gestore del select menu:', error);
             // Gestione errori per i componenti (es. se la deferUpdate fallisce o followUp)
+            // Anche qui, usiamo flags e gestiamo replied/deferred
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp(ephemeralReply('C\'è stato un errore nell\'elaborazione della tua selezione!'));
+                await interaction.followUp({ content: 'C\'è stato un errore nell\'elaborazione della tua selezione!', flags: MessageFlags.Ephemeral });
             } else {
                 // Questo caso è meno probabile per i select menu che usano deferUpdate()
-                console.error('Interazione del select menu non gestita correttamente dopo l\'errore.');
+                // ma in caso di errore critico, tentiamo una reply.
+                await interaction.reply({ content: 'C\'è stato un errore nell\'elaborazione della tua selezione!', flags: MessageFlags.Ephemeral });
             }
         }
     }
@@ -126,7 +151,7 @@ client.on('interactionCreate', async (interaction) => {
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000; // Ho impostato 10000 qui, ma usa process.env.PORT se Render lo fornisce
 
 http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
