@@ -19,7 +19,7 @@ function getRelativeTimeAgo(date) {
         result.push(`${years} year${years === 1 ? '' : 's'}`);
     }
     const remainingMonths = months % 12;
-    if (remainingMonths > 0 && years < 10) { 
+    if (remainingMonths > 0 && years < 10) { // Limit adding months if too many years for conciseness
         result.push(`${remainingMonths} month${remainingMonths === 1 ? '' : 's'}`);
     }
     
@@ -35,14 +35,14 @@ function getRelativeTimeAgo(date) {
         return "less than a minute";
     }
 
-    return result.join(' and ') + ' ago'; 
+    return result.join(' and ') + ' ago'; // Using 'and' for English
 }
 
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('userinfo')
-        .setDescription('Shows detailed information about a server user. All fields copyable.')
+        .setDescription('Shows detailed information about a server user. All fields copyable.') // Description in English
         .addUserOption(option =>
             option.setName('user')
                 .setDescription('Select a user to display information for (default: yourself).')
@@ -72,14 +72,14 @@ module.exports = {
             .filter(role => role.name !== '@everyone')
             .sort((a, b) => b.position - a.position)
             // *************** MODIFICA QUI: Mappa il ruolo come menzione per il colore ***************
-            .map(role => `<@&${role.id}>`) 
+            .map(role => `<@&${role.id}>`) // Questo renderà i ruoli cliccabili e colorati
             // ****************************************************************************************
             .join(', ');
 
         const nickname = targetMember.nickname || 'No nickname';
-        const isBoosting = targetMember.member.premiumSince ? 'Yes' : 'No'; // Ho corretto targetMember.premiumSince
+        const isBoosting = targetMember.premiumSince ? 'Yes' : 'No'; // Corretto premiumSince
 
-        // Date format: MM/DD/YYYY HH:MM (no comma)
+        // Date format: MM/DD/YYYY HH:MM (no comma, as requested)
         const dateOptions = {
             year: 'numeric', 
             month: '2-digit', 
@@ -92,6 +92,7 @@ module.exports = {
         const accountCreatedDateFormatted = targetUser.createdAt.toLocaleString('en-US', dateOptions).replace(', ', ' ');
         const joinedServerDateFormatted = targetMember.joinedAt.toLocaleString('en-US', dateOptions).replace(', ', ' ');
 
+        // Calculate the exact period in English
         const accountCreatedPeriod = getRelativeTimeAgo(targetUser.createdAt);
         const joinedServerPeriod = getRelativeTimeAgo(targetMember.joinedAt);
 
@@ -117,12 +118,13 @@ module.exports = {
                 
                 { 
                     name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}] (shows up to 10 roles)`, 
+                    // Il valore qui conterrà le menzioni colorate dei ruoli
                     value: `\`\`\`${roles.length > 0 ? roles : 'No roles'}\`\`\``, 
                     inline: false 
                 },
 
                 { name: 'Nickname', value: `\`\`\`${nickname}\`\`\``, inline: false },
-                { name: 'Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false }, // Corretto qui
+                { name: 'Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
 
                 { name: 'Global permissions', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, 
 
