@@ -1,24 +1,26 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js');
 
 module.exports = {
-    // Convertito a SlashCommandBuilder per una definizione più moderna e leggibile
+    // Definizione del comando usando SlashCommandBuilder
     data: new SlashCommandBuilder()
         .setName('userinfo')
-        .setDescription('Mostra informazioni su un utente.')
-        .addUserOption(option =>
+        .setDescription('Mostra informazioni dettagliate su un utente del server.')
+        .addUserOption(option => // Opzione per selezionare un utente
             option.setName('user')
                 .setDescription('Seleziona un utente di cui visualizzare le informazioni (predefinito: te stesso).')
-                .setRequired(false)), // Impostato su false: se non specifichi un utente, mostrerà le tue info.
+                .setRequired(false)), // Non è obbligatorio specificare un utente
 
     async execute(interaction) {
-        // Differisce la risposta pubblicamente. L'utente vedrà "Il bot sta pensando..."
-        await interaction.deferReply();
+        // Differisce la risposta. Questo mostra "Il bot sta pensando..." e dà tempo per elaborare.
+        // La risposta finale sarà pubblica, visibile a tutti nel canale.
+        await interaction.deferReply(); 
 
-        // **Nota sui Permessi:**
-        // Il tuo codice originale includeva un controllo PermissionsBitField.Flags.ManageMessages.
-        // I comandi UserInfo di solito sono accessibili a tutti gli utenti.
-        // Se vuoi che solo i moderatori possano usare questo comando, rimuovi i commenti dalle righe qui sotto
-        // E anche la riga `default_member_permissions` nella sezione `data` del comando.
+        // **Nota sul Permesso "ManageMessages":**
+        // Il tuo codice precedente includeva un controllo per "ManageMessages".
+        // I comandi UserInfo sono tipicamente accessibili a tutti gli utenti del server.
+        // Ho commentato il controllo qui sotto. Se vuoi che SOLO i moderatori possano usare questo comando,
+        // rimuovi i commenti dalle righe qui sotto E anche dalla riga `default_member_permissions`
+        // nella sezione `data` di questo modulo.
         /*
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
             return interaction.editReply({ content: '🚫 Solo i moderatori possono usare questo comando.', ephemeral: true });
@@ -30,18 +32,17 @@ module.exports = {
         let targetMember;
 
         try {
-            // Tenta di recuperare l'oggetto GuildMember per informazioni specifiche del server.
-            // Questo è necessario per ruoli, nickname, data di ingresso nel server.
+            // Cerca l'oggetto GuildMember per l'utente, che contiene informazioni specifiche del server (ruoli, nickname, ecc.).
             targetMember = await interaction.guild.members.fetch(targetUser.id);
         } catch (error) {
             console.error(`Errore nel recupero del membro per l'utente ${targetUser.id}: ${error}`);
-            // Se l'utente non viene trovato nel server (es. ID non valido, utente non nel server),
-            // invia un messaggio di errore effimero.
-            return interaction.editReply({ content: '❌ Impossibile trovare l\'utente specificato in questo server.', ephemeral: true });
+            // Se l'utente non viene trovato nel server o c'è un altro errore, informa l'utente.
+            return interaction.editReply({ content: '❌ Impossibile trovare l\'utente specificato in questo server.' });
         }
 
         // --- Preparazione dei Dati per l'Embed ---
-        // Filtra il ruolo @everyone, ordina per posizione (i ruoli più alti prima) e menzionali.
+
+        // Ruoli: filtra il ruolo "@everyone", ordina per posizione (i ruoli più alti prima) e menzionali.
         const roles = targetMember.roles.cache
             .filter(role => role.name !== '@everyone')
             .sort((a, b) => b.position - a.position)
@@ -51,7 +52,7 @@ module.exports = {
         const nickname = targetMember.nickname || 'Nessuno'; // Nickname nel server, se non impostato, "Nessuno"
         const isBoosting = targetMember.premiumSince ? 'Sì' : 'No'; // Controlla se l'utente sta boostando il server
 
-        // Utilizzo dei timestamp di Discord per date dinamiche e localizzate (molto meglio di toLocaleString)
+        // Utilizzo dei timestamp di Discord per date dinamiche e localizzate
         // <t:timestamp:F> -> Data e ora complete (es. "1 gennaio 2023 10:00")
         // <t:timestamp:R> -> Tempo relativo (es. "2 giorni fa")
         const accountCreatedTimestamp = Math.floor(targetUser.createdTimestamp / 1000);
@@ -59,38 +60,47 @@ module.exports = {
 
         // --- Costruzione dell'Embed per una Migliore Grafica ---
         const embed = new EmbedBuilder()
-            .setColor('#00AAFF') // Mantieni il colore che hai scelto
-            // Utilizza setAuthor per mostrare il nome utente e l'avatar in cima, più pulito del solo titolo
+            .setColor('#5865F2') // Un colore blu più vivace o il blu ufficiale di Discord
+            // Imposta l'autore dell'embed con il nome utente e l'avatar.
+            // Aggiungi un'emoji visiva nel nome per un tocco in più.
             .setAuthor({
-                name: `${targetUser.username}`,
+                name: `👤 Informazioni Utente: ${targetUser.username}`, // Nome più descrittivo con emoji
                 iconURL: targetUser.displayAvatarURL({ dynamic: true, size: 32 })
             })
-            // Imposta l'avatar dell'utente come thumbnail, più grande (256x256) per visibilità
+            // Imposta l'avatar dell'utente come thumbnail, con una dimensione chiara.
             .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
-            // Sposta l'ID utente nella descrizione per una vista più compatta e immediata
-            .setDescription(`**ID Utente:** \`${targetUser.id}\``)
-            .addFields(
-                { name: 'Nickname nel Server', value: `\`${nickname}\``, inline: true },
-                { name: 'È un Bot?', value: targetUser.bot ? 'Sì' : 'No', inline: true }, // Aggiunto per indicare se è un bot
-                { name: '\u200B', value: '\u200B', inline: true }, // Campo vuoto per allineamento su 3 colonne
-
-                // Date con timestamp di Discord per formati leggibili e dinamici
-                { name: 'Account Discord Creato', value: `<t:${accountCreatedTimestamp}:F> (<t:${accountCreatedTimestamp}:R>)`, inline: false },
-                { name: 'Unito al Server', value: `<t:${joinedServerTimestamp}:F> (<t:${joinedServerTimestamp}:R>)`, inline: false },
-
-                { name: 'Sta Boostando il Server?', value: `\`${isBoosting}\``, inline: true },
-                { name: '\u200B', value: '\u200B', inline: true }, // Campo vuoto per allineamento
-                { name: '\u200B', value: '\u200B', inline: true }, // Ancora un campo vuoto
-                
-                // Ruoli (non inline per maggiore leggibilità se ce ne sono molti)
-                { name: `Ruoli (${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size})`, value: roles.length > 0 ? `${roles}` : 'Nessuno', inline: false }
+            // Aggiungi una descrizione iniziale con menzione dell'utente e ID.
+            .setDescription(
+                `Mostra i dettagli per ${targetUser.toString()} (ID: \`${targetUser.id}\`)\n\n` +
+                `**Stato:** ${targetUser.presence ? targetUser.presence.status.toUpperCase() : 'OFFLINE'}` // Mostra lo stato (richiede l'intent GuildPresences)
             )
-            // Aggiungi un footer con chi ha richiesto l'info e un timestamp corrente
+            .addFields(
+                // Informazioni personali e di base (inline per compattezza)
+                { name: '📜 Nickname nel Server', value: `\`${nickname}\``, inline: true },
+                { name: '🏷️ Username Discord', value: `\`${targetUser.globalName || targetUser.username}\``, inline: true }, // Usa globalName se disponibile
+                { name: '🤖 È un Bot?', value: targetUser.bot ? '✅ Sì' : '❌ No', inline: true },
+
+                { name: '\u200B', value: '\u200B', inline: false }, // Campo vuoto per creare una riga di separazione
+
+                // Date importanti (non inline per maggiore leggibilità)
+                { name: '🗓️ Account Discord Creato', value: `<t:${accountCreatedTimestamp}:F> (<t:${accountCreatedTimestamp}:R>)`, inline: false },
+                { name: '➡️ Unito al Server', value: `<t:${joinedServerTimestamp}:F> (<t:${joinedServerTimestamp}:R>)`, inline: false },
+
+                { name: '\u200B', value: '\u200B', inline: false }, // Campo vuoto per creare una riga di separazione
+
+                // Dettagli specifici del server (inline e poi ruoli a piena larghezza)
+                { name: '✨ Sta Boostando il Server?', value: `\`${isBoosting}\``, inline: true },
+                { name: '\u200B', value: '\u200B', inline: true }, // Campo vuoto per allineamento
+                { name: '\u200B', value: '\u200B', inline: true }, // Campo vuoto per allineamento
+                
+                { name: `🎭 Ruoli (${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size})`, value: roles.length > 0 ? `${roles}` : 'Nessuno', inline: false }
+            )
+            // Footer con chi ha richiesto l'info e timestamp di generazione
             .setFooter({
-                text: `Info richiesta da ${interaction.user.username}`,
+                text: `Richiesto da ${interaction.user.username} |`, // Aggiunto | per una leggera separazione
                 iconURL: interaction.user.displayAvatarURL({ dynamic: true })
             })
-            .setTimestamp(); // Aggiunge l'ora corrente nel footer dell'embed
+            .setTimestamp(); // Aggiunge l'ora esatta di generazione dell'embed
 
         // Invia la risposta finale con l'embed
         await interaction.editReply({ embeds: [embed] });
