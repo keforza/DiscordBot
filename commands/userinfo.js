@@ -114,7 +114,7 @@ module.exports = {
                 { name: 'User ID', value: `\`\`\`${targetUser.id}\`\`\``, inline: false },
                 
                 { 
-                    name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}] (shows up to 10 roles)`, 
+                    name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}]`, 
                     // *************** MODIFICA QUI: Rimossa la multiline per i ruoli ***************
                     value: roles.length > 0 ? roles : 'No roles', // Rimossi i backtick per la multiline
                     // ********************************************************************************
