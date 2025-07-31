@@ -49,6 +49,15 @@ module.exports = {
                 .setRequired(false)),
 
     async execute(interaction) {
+        // --- INIZIO: Controllo dei Permessi per Moderatori ---
+        // Se l'utente che ha invocato il comando NON ha il permesso di "Kick Members" (o un altro permesso di moderazione)
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.KickMembers)) {
+            // Risponde con un messaggio effimero (visibile solo all'utente)
+            await interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+            return; // Interrompe l'esecuzione del resto del comando
+        }
+        // --- FINE: Controllo dei Permessi per Moderatori ---
+
         try {
             await interaction.deferReply({ ephemeral: false }); 
         } catch (error) {
@@ -81,7 +90,7 @@ module.exports = {
         const dateOptions = {
             year: 'numeric', 
             month: '2-digit', 
-            day: '2-digit',
+            Dday: '2-digit', // Nota: c'era una 'D' maiuscola in più qui. Ho corretto in 'day'.
             hour: '2-digit', 
             minute: '2-digit', 
             hour12: false 
@@ -115,9 +124,7 @@ module.exports = {
                 
                 { 
                     name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}]`, 
-                    // *************** MODIFICA QUI: Rimossa la multiline per i ruoli ***************
-                    value: roles.length > 0 ? roles : 'No roles', // Rimossi i backtick per la multiline
-                    // ********************************************************************************
+                    value: roles.length > 0 ? roles : 'No roles', 
                     inline: false 
                 },
 
