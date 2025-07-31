@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('disc
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('userinfo')
-        .setDescription('Mostra informazioni dettagliate su un utente del server. Tutti i campi copiabili.') // Descrizione accorciata
+        .setDescription('Mostra informazioni dettagliate su un utente del server in modo leggibile.')
         .addUserOption(option =>
             option.setName('user')
                 .setDescription('Seleziona un utente di cui visualizzare le informazioni (predefinito: te stesso).')
@@ -27,24 +27,16 @@ module.exports = {
         const roles = targetMember.roles.cache
             .filter(role => role.name !== '@everyone')
             .sort((a, b) => b.position - a.position)
-            .map(role => `${role.name}`)
+            .map(role => `${role}`)
             .join(', ');
 
-        const nickname = targetMember.nickname || 'No nickname';
-        const isBoosting = targetMember.premiumSince ? 'Yes' : 'No';
+        const nickname = targetMember.nickname || 'Nessuno';
+        const isBoosting = targetMember.premiumSince ? 'Sì' : 'No';
 
-        // Formattazione delle date: MM/DD/YYYY, HH:MM (come nell'immagine)
-        const dateOptions = {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', hour12: false // Formato 24 ore
-        };
-
-        const accountCreatedDateFormatted = targetUser.createdAt.toLocaleString('en-US', dateOptions).replace(' ', ', '); // Aggiunge la virgola
-        const joinedServerDateFormatted = targetMember.joinedAt.toLocaleString('en-US', dateOptions).replace(' ', ', '); // Aggiunge la virgola
-
-        let globalPermissionsValue = 'None';
+        // Prepara la stringa dei permessi globali
+        let globalPermissionsValue = 'Nessuno';
         if (targetMember.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            globalPermissionsValue = '👑 Administrator (all permissions)';
+            globalPermissionsValue = '👑 Amministratore (tutti i permessi)';
         } else {
             const readablePermissions = targetMember.permissions.toArray()
                 .map(perm => perm.replace(/([A-Z])/g, ' $1').trim())
@@ -54,50 +46,67 @@ module.exports = {
             }
         }
         
+        // --- Formattazione delle Date Esatta come Richiesto ---
+        const dateOptions = {
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: false // Formato 24 ore
+        };
+
+        // Formatta la data e l'ora, poi rimuovi la virgola e lo spazio dopo la data
+        const accountCreatedDateFormatted = targetUser.createdAt.toLocaleString('en-US', dateOptions).replace(', ', ' ');
+        const joinedServerDateFormatted = targetMember.joinedAt.toLocaleString('en-US', dateOptions).replace(', ', ' ');
+
+        // Ottieni i timestamp Unix per le date relative di Discord
+        const accountCreatedTimestamp = Math.floor(targetUser.createdTimestamp / 1000);
+        const joinedServerTimestamp = Math.floor(targetMember.joinedTimestamp / 1000);
+
         // --- Costruzione dell'Embed ---
         const embed = new EmbedBuilder()
-            .setColor(0x2B2D31) // Colore scuro per replicare lo stile dei blocchi di codice
+            .setColor('#5865F2')
             .setAuthor({
-                name: `👤 USER INFORMATION 👥`,
+                name: `Informazioni Utente: ${targetUser.username}`,
                 iconURL: targetUser.displayAvatarURL({ dynamic: true })
             })
             .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
-            // La descrizione può rimanere così, non è un campo copiabile nell'immagine di riferimento
             .setDescription(
-                `Dettagli per ${targetUser.toString()} (ID: \`${targetUser.id}\`)\n\n` +
+                `**ID:** \`${targetUser.id}\`\n` +
                 `**Stato:** ${targetUser.presence ? targetUser.presence.status.toUpperCase() : 'OFFLINE'}`
             )
             .addFields(
-                // Username e User ID - ora entrambi in blocchi multiline
-                { name: 'Username', value: `\`\`\`${targetUser.username}\`\`\``, inline: false },
-                { name: 'User ID', value: `\`\`\`${targetUser.id}\`\`\``, inline: false },
+                { name: 'Username Discord', value: `\`${targetUser.globalName || targetUser.username}\``, inline: true },
+                { name: 'Nickname nel Server', value: `\`${nickname}\``, inline: true },
+                { name: 'Bot?', value: targetUser.bot ? '✅ Sì' : '❌ No', inline: true },
                 
-                // Ruoli - già in blocco multiline
+                { name: '\u200B', value: '__Date Importanti__', inline: false },
+
+                // Date con la formattazione richiesta: MM/DD/YYYY HH:MM (tempo relativo)
                 { 
-                    name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}] (shows up to 10 roles)`, 
-                    value: `\`\`\`${roles.length > 0 ? roles : 'No roles'}\`\`\``, 
-                    inline: false 
-                },
-
-                // Nickname e Is boosting - ora entrambi in blocchi multiline
-                { name: 'Nickname', value: `\`\`\`${nickname}\`\`\``, inline: false },
-                { name: 'Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
-
-                // Permessi Globali - già in blocco multiline
-                { name: 'Global permissions', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, 
-
-                // Date - ora con formattazione corretta e in blocco multiline
-                { 
-                    name: 'Joined this server on (MM/DD/YYYY)', 
-                    value: `\`\`\`${joinedServerDateFormatted} (<t:${Math.floor(targetMember.joinedTimestamp / 1000)}:R>)\`\`\``, 
+                    name: 'Account Discord Creato', 
+                    value: `\`${accountCreatedDateFormatted} (<t:${accountCreatedTimestamp}:R>)\``, 
                     inline: false 
                 },
                 { 
-                    name: 'Account created on (MM/DD/YYYY)', 
-                    value: `\`\`\`${accountCreatedDateFormatted} (<t:${Math.floor(targetUser.createdTimestamp / 1000)}:R>)\`\`\``, 
+                    name: 'Unito al Server', 
+                    value: `\`${joinedServerDateFormatted} (<t:${joinedServerTimestamp}:R>)\``, 
                     inline: false 
-                }
-            );
+                },
+
+                { name: '\u200B', value: '__Dettagli del Server__', inline: false },
+                
+                { name: 'Sta Boostando il Server?', value: `\`${isBoosting}\``, inline: true },
+                { name: `Ruoli (${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size})`, value: roles.length > 0 ? `${roles}` : 'Nessuno', inline: false },
+                
+                { name: 'Permessi Globali', value: `\`${globalPermissionsValue}\``, inline: false }
+            )
+            .setFooter({
+                text: `Info richiesta da ${interaction.user.username}`,
+                iconURL: interaction.user.displayAvatarURL({ dynamic: true })
+            })
+            .setTimestamp();
 
         await interaction.editReply({ embeds: [embed] });
     }
