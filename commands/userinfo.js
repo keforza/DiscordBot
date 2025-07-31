@@ -3,11 +3,8 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('disc
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('userinfo')
-        // Shorten the description to be 100 characters or less
-        .setDescription('Mostra informazioni dettagliate su un utente del server. Campi copiabili.') 
-        // Or something like: 'Mostra informazioni dettagliate sugli utenti del server, con campi copiabili.'
-        // Or even more concise: 'Ottieni info utente (con campi copiabili).'
-        .addUserOption(option => 
+        .setDescription('Mostra informazioni dettagliate su un utente del server. Tutti i campi copiabili.') // Descrizione accorciata
+        .addUserOption(option =>
             option.setName('user')
                 .setDescription('Seleziona un utente di cui visualizzare le informazioni (predefinito: te stesso).')
                 .setRequired(false)),
@@ -25,6 +22,8 @@ module.exports = {
             return interaction.editReply({ content: '❌ Impossibile trovare l\'utente specificato in questo server.' });
         }
 
+        // --- Preparazione dei Dati per l'Embed ---
+
         const roles = targetMember.roles.cache
             .filter(role => role.name !== '@everyone')
             .sort((a, b) => b.position - a.position)
@@ -34,14 +33,14 @@ module.exports = {
         const nickname = targetMember.nickname || 'No nickname';
         const isBoosting = targetMember.premiumSince ? 'Yes' : 'No';
 
-        const accountCreatedDateFormatted = targetUser.createdAt.toLocaleString('en-US', {
+        // Formattazione delle date: MM/DD/YYYY, HH:MM (come nell'immagine)
+        const dateOptions = {
             year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', hour12: false
-        });
-        const joinedServerDateFormatted = targetMember.joinedAt.toLocaleString('en-US', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', hour12: false
-        });
+            hour: '2-digit', minute: '2-digit', hour12: false // Formato 24 ore
+        };
+
+        const accountCreatedDateFormatted = targetUser.createdAt.toLocaleString('en-US', dateOptions).replace(' ', ', '); // Aggiunge la virgola
+        const joinedServerDateFormatted = targetMember.joinedAt.toLocaleString('en-US', dateOptions).replace(' ', ', '); // Aggiunge la virgola
 
         let globalPermissionsValue = 'None';
         if (targetMember.permissions.has(PermissionsBitField.Flags.Administrator)) {
@@ -55,40 +54,47 @@ module.exports = {
             }
         }
         
+        // --- Costruzione dell'Embed ---
         const embed = new EmbedBuilder()
-            .setColor(0x2B2D31)
+            .setColor(0x2B2D31) // Colore scuro per replicare lo stile dei blocchi di codice
             .setAuthor({
                 name: `👤 USER INFORMATION 👥`,
                 iconURL: targetUser.displayAvatarURL({ dynamic: true })
             })
             .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
+            // La descrizione può rimanere così, non è un campo copiabile nell'immagine di riferimento
             .setDescription(
-                `Mostra i dettagli per ${targetUser.toString()} (ID: \`${targetUser.id}\`)\n\n` +
+                `Dettagli per ${targetUser.toString()} (ID: \`${targetUser.id}\`)\n\n` +
                 `**Stato:** ${targetUser.presence ? targetUser.presence.status.toUpperCase() : 'OFFLINE'}`
             )
             .addFields(
+                // Username e User ID - ora entrambi in blocchi multiline
                 { name: 'Username', value: `\`\`\`${targetUser.username}\`\`\``, inline: false },
                 { name: 'User ID', value: `\`\`\`${targetUser.id}\`\`\``, inline: false },
                 
+                // Ruoli - già in blocco multiline
                 { 
                     name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}] (shows up to 10 roles)`, 
                     value: `\`\`\`${roles.length > 0 ? roles : 'No roles'}\`\`\``, 
                     inline: false 
                 },
 
+                // Nickname e Is boosting - ora entrambi in blocchi multiline
                 { name: 'Nickname', value: `\`\`\`${nickname}\`\`\``, inline: false },
                 { name: 'Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
 
+                // Permessi Globali - già in blocco multiline
                 { name: 'Global permissions', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, 
 
+                // Date - ora con formattazione corretta e in blocco multiline
                 { 
                     name: 'Joined this server on (MM/DD/YYYY)', 
-                    value: `\`\`\`${joinedServerDateFormatted} (${`<t:${Math.floor(targetMember.joinedTimestamp / 1000)}:R>`})\`\`\``, 
+                    value: `\`\`\`${joinedServerDateFormatted} (<t:${Math.floor(targetMember.joinedTimestamp / 1000)}:R>)\`\`\``, 
                     inline: false 
                 },
                 { 
                     name: 'Account created on (MM/DD/YYYY)', 
-                    value: `\`\`\`${accountCreatedDateFormatted} (${`<t:${Math.floor(targetUser.createdTimestamp / 1000)}:R>`})\`\`\``, 
+                    value: `\`\`\`${accountCreatedDateFormatted} (<t:${Math.floor(targetUser.createdTimestamp / 1000)}:R>)\`\`\``, 
                     inline: false 
                 }
             );
