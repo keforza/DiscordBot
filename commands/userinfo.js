@@ -1,5 +1,48 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js');
 
+// Funzione ausiliaria per calcolare la differenza di tempo in modo leggibile
+function getRelativeTimeAgo(date) {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime(); // Differenza in millisecondi
+
+    // Conversione in unità di tempo
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    // Calcolo anni e mesi basato su giorni medi
+    const years = Math.floor(days / 365.25);
+    const months = Math.floor(days / 30.44);
+
+    let result = [];
+
+    if (years > 0) {
+        result.push(`${years} anno${years === 1 ? '' : 'i'}`);
+    }
+    // Aggiungi i mesi rimanenti solo se non sono già coperti da anni completi
+    const remainingMonths = months % 12;
+    if (remainingMonths > 0 && years < 10) { // Limita l'aggiunta di mesi se ci sono molti anni per concisione
+        result.push(`${remainingMonths} mese${remainingMonths === 1 ? '' : 'i'}`);
+    }
+    
+    // Aggiungi giorni solo se non ci sono anni o mesi significativi
+    if (years === 0 && months === 0 && days > 0) {
+        result.push(`${days} giorno${days === 1 ? '' : 'i'}`);
+    } else if (years === 0 && months === 0 && days === 0 && hours > 0) {
+        result.push(`${hours} ora${hours === 1 ? '' : 'e'}`);
+    } else if (years === 0 && months === 0 && days === 0 && hours === 0 && minutes > 0) {
+        result.push(`${minutes} minuto${minutes === 1 ? '' : 'i'}`);
+    } else if (years === 0 && months === 0 && days === 0 && hours === 0 && minutes === 0 && seconds > 0) {
+        result.push(`${seconds} secondo${seconds === 1 ? '' : 'i'}`);
+    } else if (result.length === 0) {
+        return "meno di un minuto"; // Se non c'è una differenza significativa
+    }
+
+    return result.join(', ') + ' fa';
+}
+
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('userinfo')
@@ -10,7 +53,13 @@ module.exports = {
                 .setRequired(false)),
 
     async execute(interaction) {
-        await interaction.deferReply(); 
+        // Ho mantenuto il deferReply iniziale per prevenire l'errore "Unknown interaction"
+        try {
+            await interaction.deferReply({ ephemeral: false }); 
+        } catch (error) {
+            console.error("Errore nel deferReply:", error);
+            return; 
+        }
 
         const targetUser = interaction.options.getUser('user') || interaction.user;
         let targetMember;
@@ -19,7 +68,8 @@ module.exports = {
             targetMember = await interaction.guild.members.fetch(targetUser.id);
         } catch (error) {
             console.error(`Errore nel recupero del membro per l'utente ${targetUser.id}: ${error}`);
-            return interaction.editReply({ content: '❌ Impossibile trovare l\'utente specificato in questo server.' });
+            // Se fetch fallisce, modifica la reply che è già stata deferita.
+            return interaction.editReply({ content: '❌ Impossibile trovare l\'utente specificato in questo server.', ephemeral: true });
         }
 
         // --- Preparazione dei Dati per l'Embed ---
@@ -33,25 +83,21 @@ module.exports = {
         const nickname = targetMember.nickname || 'No nickname';
         const isBoosting = targetMember.premiumSince ? 'Yes' : 'No';
 
-        // Formattazione delle date: MM/DD/YYYY HH:MM (senza virgola)
+        // Formattazione delle date: MM/DD/YYYY HH:MM (senza virgola, come da richiesta)
         const dateOptions = {
-            year: 'numeric', 
-            month: '2-digit', 
-            day: '2-digit',
-            hour: '2-digit', 
-            minute: '2-digit', 
-            hour12: false // Formato 24 ore
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', hour12: false // Formato 24 ore
         };
 
-        // *************** LINEA CORRETTA QUI ***************
-        // Sostituisce ", " (virgola e spazio) con un singolo spazio
+        // *************** CORREZIONE QUI: sostituito ', ' con ' ' per rimuovere la virgola ***************
         const accountCreatedDateFormatted = targetUser.createdAt.toLocaleString('en-US', dateOptions).replace(', ', ' ');
         const joinedServerDateFormatted = targetMember.joinedAt.toLocaleString('en-US', dateOptions).replace(', ', ' ');
-        // *************************************************
+        // ************************************************************************************************
 
-        // Ottieni i timestamp Unix per le date relative di Discord
-        const accountCreatedTimestamp = Math.floor(targetUser.createdTimestamp / 1000);
-        const joinedServerTimestamp = Math.floor(targetMember.joinedTimestamp / 1000);
+        // ************** NUOVA PARTE: Calcolo del periodo di tempo **************
+        const accountCreatedPeriod = getRelativeTimeAgo(targetUser.createdAt);
+        const joinedServerPeriod = getRelativeTimeAgo(targetMember.joinedAt);
+        // ************************************************************************
 
         let globalPermissionsValue = 'None';
         if (targetMember.permissions.has(PermissionsBitField.Flags.Administrator)) {
@@ -68,35 +114,35 @@ module.exports = {
         // --- Costruzione dell'Embed ---
         const embed = new EmbedBuilder()
             .setColor(0x2B2D31) // Colore scuro per replicare lo stile dei blocchi di codice
-            .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 })) // Il thumbnail rimane
+            .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
             .addFields(
-                // Username e User ID (campi copiabili a piena larghezza)
+                // Username e User ID - ora entrambi in blocchi multiline
                 { name: 'Username', value: `\`\`\`${targetUser.username}\`\`\``, inline: false },
                 { name: 'User ID', value: `\`\`\`${targetUser.id}\`\`\``, inline: false },
                 
-                // Ruoli (campo copiabile a piena larghezza)
+                // Ruoli - già in blocco multiline
                 { 
                     name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}] (shows up to 10 roles)`, 
                     value: `\`\`\`${roles.length > 0 ? roles : 'No roles'}\`\`\``, 
                     inline: false 
                 },
 
-                // Nickname e Is boosting (campi copiabili a piena larghezza)
+                // Nickname e Is boosting - ora entrambi in blocchi multiline
                 { name: 'Nickname', value: `\`\`\`${nickname}\`\`\``, inline: false },
                 { name: 'Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
 
-                // Permessi Globali (campo copiabile a piena larghezza)
+                // Permessi Globali - già in blocco multiline
                 { name: 'Global permissions', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, 
 
-                // Date (campi copiabili a piena larghezza con formattazione richiesta)
+                // Date - ora con formattazione MM/DD/YYYY HH:MM (periodo calcolato)
                 { 
                     name: 'Joined this server on (MM/DD/YYYY)', 
-                    value: `\`\`\`${joinedServerDateFormatted} (<t:${joinedServerTimestamp}:R>)\`\`\``, 
+                    value: `\`\`\`${joinedServerDateFormatted} (${joinedServerPeriod})\`\`\``, 
                     inline: false 
                 },
                 { 
                     name: 'Account created on (MM/DD/YYYY)', 
-                    value: `\`\`\`${accountCreatedDateFormatted} (<t:${accountCreatedTimestamp}:R>)\`\`\``, 
+                    value: `\`\`\`${accountCreatedDateFormatted} (${accountCreatedPeriod})\`\`\``, 
                     inline: false 
                 }
             );
