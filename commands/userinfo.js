@@ -46,17 +46,19 @@ module.exports = {
         .addUserOption(option =>
             option.setName('user')
                 .setDescription('Select a user to display information for (default: yourself).')
-                .setRequired(false)),
+                .setRequired(false))
+        // *************** MODIFICA QUI: Aggiunto il permesso per i moderatori ***************
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.KickMembers) // Solo utenti con permesso KickMembers
+        .setDMPermission(false), // Questo comando non può essere usato nei DM
+        // ************************************************************************************
 
     async execute(interaction) {
-        // --- INIZIO: Controllo dei Permessi per Moderatori ---
-        // Se l'utente che ha invocato il comando NON ha il permesso di "Kick Members" (o un altro permesso di moderazione)
-        if (!interaction.member.permissions.has(PermissionsBitField.Flags.KickMembers)) {
-            // Risponde con un messaggio effimero (visibile solo all'utente)
-            await interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
-            return; // Interrompe l'esecuzione del resto del comando
-        }
-        // --- FINE: Controllo dei Permessi per Moderatori ---
+        // --- RIMOSSO: Il controllo dei permessi è ora gestito da .setDefaultMemberPermissions() ---
+        // if (!interaction.member.permissions.has(PermissionsBitField.Flags.KickMembers)) {
+        //     await interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+        //     return; 
+        // }
+        // --- FINE: Rimozione ---
 
         try {
             await interaction.deferReply({ ephemeral: false }); 
@@ -90,7 +92,9 @@ module.exports = {
         const dateOptions = {
             year: 'numeric', 
             month: '2-digit', 
-            Dday: '2-digit', // Nota: c'era una 'D' maiuscola in più qui. Ho corretto in 'day'.
+            // *************** CORREZIONE QUI: 'Dday' a 'day' ***************
+            day: '2-digit', 
+            // **************************************************************
             hour: '2-digit', 
             minute: '2-digit', 
             hour12: false 
