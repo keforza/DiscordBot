@@ -57,16 +57,7 @@ module.exports = {
         // --- Costruzione dell'Embed ---
         const embed = new EmbedBuilder()
             .setColor(0x2B2D31) // Colore scuro per replicare lo stile dei blocchi di codice
-            .setAuthor({
-                name: `👤 USER INFORMATION 👥`,
-                iconURL: targetUser.displayAvatarURL({ dynamic: true })
-            })
             .setThumbnail(targetUser.displayAvatarURL({ dynamic: true, size: 256 }))
-            // La descrizione può rimanere così, non è un campo copiabile nell'immagine di riferimento
-            .setDescription(
-                `Dettagli per ${targetUser.toString()} (ID: \`${targetUser.id}\`)\n\n` +
-                `**Stato:** ${targetUser.presence ? targetUser.presence.status.toUpperCase() : 'OFFLINE'}`
-            )
             .addFields(
                 // Username e User ID - ora entrambi in blocchi multiline
                 { name: 'Username', value: `\`\`\`${targetUser.username}\`\`\``, inline: false },
