@@ -3,8 +3,11 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('disc
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('userinfo')
-        .setDescription('Mostra informazioni dettagliate su un utente del server, con tutti i campi copiabili a piena larghezza.')
-        .addUserOption(option =>
+        // Shorten the description to be 100 characters or less
+        .setDescription('Mostra informazioni dettagliate su un utente del server. Campi copiabili.') 
+        // Or something like: 'Mostra informazioni dettagliate sugli utenti del server, con campi copiabili.'
+        // Or even more concise: 'Ottieni info utente (con campi copiabili).'
+        .addUserOption(option => 
             option.setName('user')
                 .setDescription('Seleziona un utente di cui visualizzare le informazioni (predefinito: te stesso).')
                 .setRequired(false)),
@@ -21,8 +24,6 @@ module.exports = {
             console.error(`Errore nel recupero del membro per l'utente ${targetUser.id}: ${error}`);
             return interaction.editReply({ content: '❌ Impossibile trovare l\'utente specificato in questo server.' });
         }
-
-        // --- Preparazione dei Dati per l'Embed ---
 
         const roles = targetMember.roles.cache
             .filter(role => role.name !== '@everyone')
@@ -54,7 +55,6 @@ module.exports = {
             }
         }
         
-        // --- Costruzione dell'Embed ---
         const embed = new EmbedBuilder()
             .setColor(0x2B2D31)
             .setAuthor({
@@ -67,7 +67,6 @@ module.exports = {
                 `**Stato:** ${targetUser.presence ? targetUser.presence.status.toUpperCase() : 'OFFLINE'}`
             )
             .addFields(
-                // Ogni campo ora è a piena larghezza (inline: false) e con blocco di codice multiline
                 { name: 'Username', value: `\`\`\`${targetUser.username}\`\`\``, inline: false },
                 { name: 'User ID', value: `\`\`\`${targetUser.id}\`\`\``, inline: false },
                 
