@@ -18,14 +18,13 @@ module.exports = {
 
             const memeEmbed = new EmbedBuilder()
                 .setColor(embedColor)
-                .setTitle(`😂 ${meme.title} 😂`) // Doppia emoji per enfasi
+                .setTitle(`${meme.title}`)
                 .setURL(meme.postLink) // Link al post originale
-                .setDescription(`_Un momento di pura ilarità! 😂_`) // Una piccola descrizione/introduzione
                 .setImage(meme.url) // L'immagine del meme
                 // Aggiunta di un campo per la fonte (Subreddit) e l'autore
                 .addFields(
                     { name: '🌐 Subreddit', value: `\`r/${meme.subreddit}\``, inline: true }, // Usato backticks per evidenziare il subreddit
-                    { name: '✍️ Autore', value: `\`u/${meme.author}\``, inline: true } // Usato backticks per evidenziare l'autore
+                    { name: '<:K3_supporto:1290611212052332556> Autore', value: `\`u/${meme.author}\``, inline: true } // Usato backticks per evidenziare l'autore
                 )
                 .setFooter({
                     text: 'Meme offerto da ✨Kappiani Bot✨ | powered by meme-api.com', // Messaggio più personalizzato nel footer
