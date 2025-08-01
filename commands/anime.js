@@ -88,9 +88,6 @@ module.exports = {
                     );
                 }
 
-                embed.setTimestamp() // Aggiungi un timestamp (utile per vedere quando il bot ha recuperato i dati)
-                .setFooter({ text: `Powered by Jikan API (MyAnimeList)`, iconURL: 'https://jikan.moe/assets/images/logo/jikan-logo.png' }); // Footer con attribuzione
-
             await interaction.editReply({ embeds: [embed] });
 
         } catch (error) {
