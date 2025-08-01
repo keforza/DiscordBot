@@ -70,10 +70,10 @@ module.exports = {
                 // RIMOSSO: .setImage(anime.images.jpg.large_image_url || anime.images.jpg.image_url || null)
                 .addFields(
                     { name: '📝 Synopsis', value: synopsis, inline: false },
-                    { name: '🎬 Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
+                    { name: '<:K3_episodes:1400824494540460043> Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
                     { name: '<:K3_approved:1400814077596663808> Status', value: anime.status || 'N/A', inline: true }, // Updated here!
-                    { name: '🔴 Aired', value: anime.aired.string || 'N/A', inline: true },
-                    { name: '⭐ Score', value: anime.score ? `${anime.score} / 10` : 'N/A', inline: true }, // Aggiunto "/ 10"
+                    { name: '<:K3_onair:1291676245259456552> Aired', value: anime.aired.string || 'N/A', inline: true },
+                    { name: '<:K3_star:1289918161294065724> Score', value: anime.score ? `${anime.score} / 10` : 'N/A', inline: true }, // Aggiunto "/ 10"
                     { name: '🏷️ Genres', value: genres, inline: true },
                     { name: '🏢 Studio(s)', value: studios, inline: true }, // Nuovo campo: Studio
                     { name: '🔞 Rating', value: rating, inline: true } // Nuovo campo: Rating

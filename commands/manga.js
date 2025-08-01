@@ -84,7 +84,7 @@ module.exports = {
                     )
                     .setThumbnail(coverUrl) // Set the cover image as the thumbnail
                     .addFields( // Add information fields to the embed
-                        { name: '✅ Status', value: manga.attributes.status || 'Unknown', inline: true },
+                        { name: '<:K3_approved:1400814077596663808> Status', value: manga.attributes.status || 'Unknown', inline: true },
                         { name: '📅 Year', value: manga.attributes.year?.toString() || 'Unknown', inline: true },
                         { name: '🔞 Content Rating', value: manga.attributes.contentRating || 'Unknown', inline: true },
                         { name: '🏷️ Genres', value: genres, inline: false } // Genres/Tags as a full width field
