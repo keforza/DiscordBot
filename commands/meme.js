@@ -28,11 +28,9 @@ module.exports = {
                     { name: '✍️ Autore', value: `\`u/${meme.author}\``, inline: true } // Usato backticks per evidenziare l'autore
                 )
                 .setFooter({
-                    text: 'Meme offerto da K3Bot | powered by meme-api.com', // Messaggio più personalizzato nel footer
-                    iconURL: interaction.client.user.displayAvatarURL() // Icona del bot nel footer
+                    text: 'Meme offerto da ✨Kappiani Bot✨ | powered by meme-api.com', // Messaggio più personalizzato nel footer
+                    iconURL: interaction.guild.iconURL() // Icona del server nel footer
                 })
-                .setTimestamp(); // Mostra l'ora di generazione dell'embed
-
             await interaction.editReply({ embeds: [memeEmbed] });
 
         } catch (error) {
