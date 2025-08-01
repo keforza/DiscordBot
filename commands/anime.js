@@ -61,7 +61,6 @@ module.exports = {
             // --- Gestione Trailer ---
             const trailerUrl = anime.trailer && anime.trailer.url ? anime.trailer.url : 'N/A';
 
-
             const embed = new EmbedBuilder()
                 .setColor('#FF99CC') // Colore rosa/viola più vivace
                 .setTitle(anime.title)
@@ -72,8 +71,8 @@ module.exports = {
                 .addFields(
                     { name: '📝 Synopsis', value: synopsis, inline: false },
                     { name: '🎬 Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
-                    { name: '✅ Status', value: anime.status || 'N/A', inline: true },
-                    { name: '📅 Aired', value: anime.aired.string || 'N/A', inline: true },
+                    { name: '<:K3_approved:1400814077596663808> Status', value: anime.status || 'N/A', inline: true }, // Updated here!
+                    { name: '🔴 Aired', value: anime.aired.string || 'N/A', inline: true },
                     { name: '⭐ Score', value: anime.score ? `${anime.score} / 10` : 'N/A', inline: true }, // Aggiunto "/ 10"
                     { name: '🏷️ Genres', value: genres, inline: true },
                     { name: '🏢 Studio(s)', value: studios, inline: true }, // Nuovo campo: Studio
