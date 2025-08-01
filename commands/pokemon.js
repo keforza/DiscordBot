@@ -37,9 +37,9 @@ module.exports = {
                 .setTitle(`${pokeData.name.charAt(0).toUpperCase() + pokeData.name.slice(1)} (#${pokeData.id})`)
                 .setThumbnail(pokeData.sprites.front_default)
                 .addFields(
-                    { name: 'Type', value: types, inline: true },
-                    { name: 'Height', value: `${pokeData.height / 10} m`, inline: true },
-                    { name: 'Weight', value: `${pokeData.weight / 10} kg`, inline: true },
+                    { name: '<:K3_energy:1400829273236832337> Type', value: types, inline: true },
+                    { name: '↕️ Height', value: `${pokeData.height / 10} m`, inline: true },
+                    { name: '⚖️ Weight', value: `${pokeData.weight / 10} kg`, inline: true },
                     { name: 'Generation', value: generation, inline: true }
                 );
 
