@@ -10,7 +10,7 @@ module.exports = {
                 .setDescription('The name of the anime to search for.')
                 .setRequired(true)
         ),
-    
+
     async execute(interaction) {
         await interaction.deferReply();
 
@@ -20,46 +20,84 @@ module.exports = {
             const response = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchQuery)}&limit=1`);
             const data = await response.json();
 
-            if (!data || !data.data || data.data.length === 0) {
-                return interaction.editReply({ 
-                    content: `❌ Anime "${searchQuery}" not found. Try a different or more specific name.`, 
-                    ephemeral: true 
+            if (!response.ok || !data || !data.data || data.data.length === 0) {
+                // Migliore gestione degli errori HTTP e dati non trovati
+                const errorMessage = data && data.message ? data.message : `Anime "${searchQuery}" not found. Try a different or more specific name.`;
+                return interaction.editReply({
+                    content: `❌ ${errorMessage}`,
+                    ephemeral: true
                 });
             }
 
             const anime = data.data[0];
 
+            // --- Gestione della Sinossi ---
             let synopsis = anime.synopsis || 'No synopsis available.';
-            
-            if (synopsis.includes('[Written by MAL Rewrite]')) {
-                synopsis = synopsis.replace('[Written by MAL Rewrite]', '').trim();
+            // Rimuovi "[Written by MAL Rewrite]" e simili
+            synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, '').trim();
+            synopsis = synopsis.replace(/\[Source:.*?\]/gi, '').trim(); // Rimuove anche altri riferimenti di fonte
+
+            // Trunca la sinossi se troppo lunga
+            if (synopsis.length > 1000) { // Un po' meno di 1024 per avere margine
+                synopsis = synopsis.substring(0, 997) + '...';
+            }
+            if (synopsis.length === 0) { // Se dopo la pulizia è vuota
+                synopsis = 'No synopsis available.';
             }
 
-            if (synopsis.length > 1024) {
-                synopsis = synopsis.substring(0, 1021) + '...';
-            }
+            // --- Gestione Generi ---
+            const genres = anime.genres && anime.genres.length > 0
+                ? anime.genres.map(g => g.name).join(', ')
+                : 'N/A';
+
+            // --- Gestione Studi ---
+            const studios = anime.studios && anime.studios.length > 0
+                ? anime.studios.map(s => s.name).join(', ')
+                : 'N/A';
+            
+            // --- Gestione Rating ---
+            const rating = anime.rating || 'N/A';
+
+            // --- Gestione Trailer ---
+            const trailerUrl = anime.trailer && anime.trailer.url ? anime.trailer.url : 'N/A';
+
 
             const embed = new EmbedBuilder()
-                .setColor('#2E588F')
+                .setColor('#FF99CC') // Colore rosa/viola più vivace o `#9900FF` per un viola profondo
                 .setTitle(anime.title)
-                .setURL(anime.url)
-                .setThumbnail(anime.images.jpg.image_url || null)
+                .setURL(anime.url) // Link alla pagina MAL dell'anime
+                .setDescription(`*Alternative Titles: ${anime.title_japanese || 'N/A'}*`) // Titolo giapponese o altri titoli
+                .setThumbnail(anime.images.jpg.small_image_url || null) // Thumbnail più piccola per la sidebar
+                .setImage(anime.images.jpg.large_image_url || anime.images.jpg.image_url || null) // Immagine più grande come immagine principale
                 .addFields(
-                    { name: 'Synopsis', value: synopsis, inline: false },
-                    { name: 'Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
-                    { name: 'Status', value: anime.status || 'N/A', inline: true },
-                    { name: 'Aired From', value: anime.aired.string || 'N/A', inline: true },
-                    { name: 'Score', value: anime.score ? String(anime.score) : 'N/A', inline: true },
-                    { name: 'Genres', value: anime.genres.map(g => g.name).join(', ') || 'N/A', inline: true }
-                );
+                    { name: '📝 Synopsis', value: synopsis, inline: false },
+                    { name: '🎬 Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
+                    { name: '✅ Status', value: anime.status || 'N/A', inline: true },
+                    { name: '📅 Aired', value: anime.aired.string || 'N/A', inline: true },
+                    { name: '⭐ Score', value: anime.score ? `${anime.score} / 10` : 'N/A', inline: true }, // Aggiunto "/ 10"
+                    { name: '🏷️ Genres', value: genres, inline: true },
+                    { name: '🏢 Studio(s)', value: studios, inline: true }, // Nuovo campo: Studio
+                    { name: '🔞 Rating', value: rating, inline: true } // Nuovo campo: Rating
+                )
+                // Aggiunta campo per il trailer, ma solo se c'è un URL valido
+                // Non possiamo fare un campo inline con una condizione facile
+                // quindi lo gestiamo con un .addFields() separato o condizionale.
+                if (trailerUrl !== 'N/A') {
+                    embed.addFields(
+                        { name: '📺 Trailer', value: `[Watch Trailer](${trailerUrl})`, inline: false }
+                    );
+                }
+
+                embed.setTimestamp() // Aggiungi un timestamp (utile per vedere quando il bot ha recuperato i dati)
+                .setFooter({ text: `Powered by Jikan API (MyAnimeList)`, iconURL: 'https://jikan.moe/assets/images/logo/jikan-logo.png' }); // Footer con attribuzione
 
             await interaction.editReply({ embeds: [embed] });
 
         } catch (error) {
-            console.error(error);
-            await interaction.editReply({ 
-                content: `❌ An error occurred while fetching anime data. Please try again later.`, 
-                ephemeral: true 
+            console.error('Error fetching anime data:', error); // Log dell'errore più specifico
+            await interaction.editReply({
+                content: `❌ An unexpected error occurred while fetching anime data. Please ensure the bot has internet access and the Jikan API is available.`,
+                ephemeral: true
             });
         }
     },
