@@ -54,7 +54,7 @@ module.exports = {
             const studios = anime.studios && anime.studios.length > 0
                 ? anime.studios.map(s => s.name).join(', ')
                 : 'N/A';
-            
+
             // --- Gestione Rating ---
             const rating = anime.rating || 'N/A';
 
@@ -63,12 +63,12 @@ module.exports = {
 
 
             const embed = new EmbedBuilder()
-                .setColor('#FF99CC') // Colore rosa/viola più vivace o `#9900FF` per un viola profondo
+                .setColor('#FF99CC') // Colore rosa/viola più vivace
                 .setTitle(anime.title)
                 .setURL(anime.url) // Link alla pagina MAL dell'anime
                 .setDescription(`*Alternative Titles: ${anime.title_japanese || 'N/A'}*`) // Titolo giapponese o altri titoli
-                .setThumbnail(anime.images.jpg.small_image_url || null) // Thumbnail più piccola per la sidebar
-                .setImage(anime.images.jpg.large_image_url || anime.images.jpg.image_url || null) // Immagine più grande come immagine principale
+                .setThumbnail(anime.images.jpg.image_url || null) // UTILIZZA image_url per una thumbnail leggermente più grande
+                // RIMOSSO: .setImage(anime.images.jpg.large_image_url || anime.images.jpg.image_url || null)
                 .addFields(
                     { name: '📝 Synopsis', value: synopsis, inline: false },
                     { name: '🎬 Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
@@ -80,18 +80,19 @@ module.exports = {
                     { name: '🔞 Rating', value: rating, inline: true } // Nuovo campo: Rating
                 )
                 // Aggiunta campo per il trailer, ma solo se c'è un URL valido
-                // Non possiamo fare un campo inline con una condizione facile
-                // quindi lo gestiamo con un .addFields() separato o condizionale.
                 if (trailerUrl !== 'N/A') {
                     embed.addFields(
                         { name: '📺 Trailer', value: `[Watch Trailer](${trailerUrl})`, inline: false }
                     );
                 }
 
+                embed.setTimestamp() // Aggiungi un timestamp
+                .setFooter({ text: `Powered by Jikan API (MyAnimeList)`, iconURL: 'https://jikan.moe/assets/images/logo/jikan-logo.png' }); // Footer con attribuzione
+
             await interaction.editReply({ embeds: [embed] });
 
         } catch (error) {
-            console.error('Error fetching anime data:', error); // Log dell'errore più specifico
+            console.error('Error fetching anime data:', error);
             await interaction.editReply({
                 content: `❌ An unexpected error occurred while fetching anime data. Please ensure the bot has internet access and the Jikan API is available.`,
                 ephemeral: true
