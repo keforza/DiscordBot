@@ -85,10 +85,6 @@ module.exports = {
                         { name: '📺 Trailer', value: `[Watch Trailer](${trailerUrl})`, inline: false }
                     );
                 }
-
-                embed.setTimestamp() // Aggiungi un timestamp
-                .setFooter({ text: `Powered by Jikan API (MyAnimeList)`, iconURL: 'https://jikan.moe/assets/images/logo/jikan-logo.png' }); // Footer con attribuzione
-
             await interaction.editReply({ embeds: [embed] });
 
         } catch (error) {
