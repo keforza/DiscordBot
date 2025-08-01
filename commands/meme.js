@@ -21,11 +21,6 @@ module.exports = {
                 .setTitle(`${meme.title}`)
                 .setURL(meme.postLink) // Link al post originale
                 .setImage(meme.url) // L'immagine del meme
-                // Aggiunta di un campo per la fonte (Subreddit) e l'autore
-                .addFields(
-                    { name: '🌐 Subreddit', value: `\`r/${meme.subreddit}\``, inline: true }, // Usato backticks per evidenziare il subreddit
-                    { name: '<:K3_supporto:1290611212052332556> Autore', value: `\`u/${meme.author}\``, inline: true } // Usato backticks per evidenziare l'autore
-                )
                 .setFooter({
                     text: 'Meme offerto da ✨Kappiani Bot✨ | powered by meme-api.com', // Messaggio più personalizzato nel footer
                     iconURL: interaction.guild.iconURL() // Icona del server nel footer
