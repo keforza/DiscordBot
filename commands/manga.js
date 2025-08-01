@@ -89,8 +89,6 @@ module.exports = {
                         { name: '🔞 Content Rating', value: manga.attributes.contentRating || 'Unknown', inline: true },
                         { name: '🏷️ Genres', value: genres, inline: false } // Genres/Tags as a full width field
                     )
-                    // No footer as requested
-                    .setTimestamp(); // Add the current timestamp
 
                 // Send the embed as a reply, replacing the "bot is thinking..." message
                 await interaction.editReply({ embeds: [mangaEmbed] });
