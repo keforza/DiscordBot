@@ -34,7 +34,7 @@ module.exports = {
 
         try {
             await interaction.channel.bulkDelete(deletableMessages, true);
-            await interaction.reply(ephemeralReply(`✅ Deleted ${deletableMessages.size - 1} messages.`));
+            await interaction.reply(ephemeralReply(`<:K3_approved:1400814077596663808> Deleted ${deletableMessages.size - 1} messages.`));
 
         } catch (error) {
             console.error(error);
