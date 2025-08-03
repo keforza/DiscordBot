@@ -19,7 +19,7 @@ module.exports = {
             .setColor('#7289DA') // Colore di Discord 
             .setTitle('🏓 Pong!') // Titolo dell'embed con emoji
             .addFields(
-                { name: '⏱️ Bot Latency', value: `${generalLatency}ms`, inline: true }, // Latenza del bot
+                { name: '🤖 Bot Latency', value: `${generalLatency}ms`, inline: true }, // Latenza del bot
                 { name: '🌐 API Latency', value: `${apiLatency}ms`, inline: true } // Latenza API Discord
             )
 
