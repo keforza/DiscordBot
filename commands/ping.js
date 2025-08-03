@@ -16,15 +16,12 @@ module.exports = {
         const apiLatency = interaction.client.ws.ping;
 
         const embed = new EmbedBuilder()
-            .setColor('#7289DA') // Colore Discord Blue per l'embed
+            .setColor('#7289DA') // Colore di Discord 
             .setTitle('🏓 Pong!') // Titolo dell'embed con emoji
-            .setDescription('Here are the bot\'s latency details:')
             .addFields(
                 { name: '⏱️ Bot Latency', value: `${generalLatency}ms`, inline: true }, // Latenza del bot
                 { name: '🌐 API Latency', value: `${apiLatency}ms`, inline: true } // Latenza API Discord
             )
-            .setTimestamp() // Aggiunge un timestamp al footer
-            .setFooter({ text: 'Bot Latency Info' }); // Footer descrittivo
 
         // Modifica la risposta deferita con l'embed creato
         await interaction.editReply({ embeds: [embed] });
