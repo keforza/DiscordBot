@@ -10,35 +10,66 @@ module.exports = {
             {
                 name: 'count',
                 description: 'Number of messages to delete (max 100)',
-                type: 4,
+                type: 4, // INTEGER
                 required: true
             }
         ]
     },
-    async execute(interaction, ephemeralReply) {
+    // Rimuoviamo 'ephemeralReply' come parametro, lo gestiremo direttamente
+    async execute(interaction) {
+        // Defer della risposta all'inizio, dato che l'operazione di fetch e bulkDelete può richiedere tempo
+        // Rendi la risposta iniziale effimera
+        await interaction.deferReply({ ephemeral: true });
+
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-            return interaction.reply(ephemeralReply('🚫 Only moderators can use this command.'));
+            // Usa editReply dopo il defer
+            return await interaction.editReply({
+                content: '🚫 Only moderators can use this command.',
+                ephemeral: true
+            });
         }
 
         const count = interaction.options.getInteger('count');
         if (count < 1 || count > 100) {
-            return interaction.reply(ephemeralReply('❌ You can delete between 1 and 100 messages at a time.'));
+            // Usa editReply dopo il defer
+            return await interaction.editReply({
+                content: '❌ You can delete between 1 and 100 messages at a time.',
+                ephemeral: true
+            });
         }
 
-        const messages = await interaction.channel.messages.fetch({ limit: count + 1 });
-        const deletableMessages = messages.filter(msg => msg.deletable);
+        // Fetchiamo i messaggi (+1 per includere il messaggio del comando stesso se necessario)
+        // Non è necessario fare +1 se l'intento è solo cancellare i messaggi precedenti al comando
+        // Se vuoi cancellare anche il messaggio del comando, allora fetch(limit: count + 1) e deletableMessages.size - 1 è corretto nel reply
+        const messages = await interaction.channel.messages.fetch({ limit: count }); // Limit to 'count' messages
+        const deletableMessages = messages.filter(msg => !msg.pinned && msg.deletable); // Filtra anche i messaggi pinnati che non si possono cancellare
 
         if (deletableMessages.size === 0) {
-            return interaction.reply(ephemeralReply('No recent deletable messages found in the specified amount.'));
+            // Usa editReply dopo il defer
+            return await interaction.editReply({
+                content: 'No recent deletable messages found in the specified amount.',
+                ephemeral: true
+            });
         }
 
         try {
-            await interaction.channel.bulkDelete(deletableMessages, true);
-            await interaction.reply(ephemeralReply(`<:K3_approved:1400814077596663808> Deleted ${deletableMessages.size - 1} messages.`));
+            // BulkDelete dei messaggi filtrati. 'true' per silenziare gli errori sui messaggi troppo vecchi.
+            const deleted = await interaction.channel.bulkDelete(deletableMessages, true);
+            
+            // Edita la risposta deferita con il risultato.
+            // Aggiungo un messaggio effimero di conferma
+            await interaction.editReply({
+                content: `<:K3_approved:1400814077596663808> Deleted ${deleted.size} messages.`,
+                ephemeral: true
+            });
 
         } catch (error) {
             console.error(error);
-            await interaction.reply(ephemeralReply('❌ Error deleting messages. Make sure the bot has the necessary permissions and messages are not too old (Discord does not allow bulk deletion of messages older than 14 days).'));
+            // Edita la risposta deferita in caso di errore.
+            await interaction.editReply({
+                content: '❌ Error deleting messages. Make sure the bot has the necessary permissions and messages are not too old (Discord does not allow bulk deletion of messages older than 14 days).',
+                ephemeral: true
+            });
         }
     }
 };
