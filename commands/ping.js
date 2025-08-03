@@ -1,13 +1,13 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js'); // Rimuovi MessageFlags, non più necessario per ephemeral
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ping')
-        .setDescription('Risponde con la latenza generale del bot!'), // Descrizione in italiano per coerenza
+        .setDescription('Replies with the bot\'s general latency!'),
 
     async execute(interaction) {
         // Differisce la risposta come effimera (visibile solo a chi ha usato il comando)
-        // La sintassi corretta per rendere la risposta effimera è 'ephemeral: true'
+        // Usa 'ephemeral: true' secondo la sintassi raccomandata da Discord.js v14+
         await interaction.deferReply({ ephemeral: true });
 
         // Calcola la latenza di andata e ritorno (dal comando inviato all'elaborazione del bot)
@@ -20,8 +20,8 @@ module.exports = {
             .setColor('#7289DA') // Colore di Discord
             .setTitle('🏓 Pong!') // Titolo dell'embed con emoji
             .addFields(
-                { name: '🤖 Latenza Bot', value: `${generalLatency}ms`, inline: true }, // Latenza del bot
-                { name: '🌐 Latenza API', value: `${apiLatency}ms`, inline: true } // Latenza API Discord
+                { name: '🤖 Bot Latency', value: `${generalLatency}ms`, inline: true }, // Latenza del bot
+                { name: '🌐 API Latency', value: `${apiLatency}ms`, inline: true } // Latenza API Discord
             );
 
         // Modifica la risposta deferita con l'embed creato
