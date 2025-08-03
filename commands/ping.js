@@ -1,22 +1,32 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js'); // <-- AGGIUNGI MessageFlags qui!
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Replies with the bot\'s general latency!'),
 
-    async execute(interaction, ephemeralReply) {
-        // MODIFICATO QUI: Sostituito 'ephemeral: true' con 'flags: MessageFlags.Ephemeral'
+    async execute(interaction) { // Rimosso 'ephemeralReply' come parametro
+        // Differisce la risposta come effimera (visibile solo a chi ha usato il comando)
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         // Calcola la latenza di andata e ritorno (dal comando inviato all'elaborazione del bot)
         const generalLatency = Date.now() - interaction.createdTimestamp;
 
-        const replyContent = `Pong! 🏓\n Latency: \`${generalLatency}ms\``;
+        // Calcola la latenza dell'API di Discord (ping del websocket del bot)
+        const apiLatency = interaction.client.ws.ping;
 
-        // Questo riga dipende da come è definita la tua funzione `ephemeralReply`
-        // Se `ephemeralReply` restituisce già un oggetto con `flags: MessageFlags.Ephemeral`, va bene.
-        // Altrimenti, potrebbe essere necessario modificarla (vedi nota sotto).
-        await interaction.editReply(ephemeralReply(replyContent));
+        const embed = new EmbedBuilder()
+            .setColor('#7289DA') // Colore Discord Blue per l'embed
+            .setTitle('🏓 Pong!') // Titolo dell'embed con emoji
+            .setDescription('Here are the bot\'s latency details:')
+            .addFields(
+                { name: '⏱️ Bot Latency', value: `${generalLatency}ms`, inline: true }, // Latenza del bot
+                { name: '🌐 API Latency', value: `${apiLatency}ms`, inline: true } // Latenza API Discord
+            )
+            .setTimestamp() // Aggiunge un timestamp al footer
+            .setFooter({ text: 'Bot Latency Info' }); // Footer descrittivo
+
+        // Modifica la risposta deferita con l'embed creato
+        await interaction.editReply({ embeds: [embed] });
     },
 };
