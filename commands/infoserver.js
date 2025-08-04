@@ -1,19 +1,23 @@
-const { SlashCommandBuilder, EmbedBuilder, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ChannelType, PermissionsBitField } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('infoserver')
-        .setDescription('Shows detailed information about this Discord server.'),
+        .setDescription('Shows detailed information about this Discord server.')
+        // Rende il comando utilizzabile solo da chi ha il permesso di espellere membri (moderatori)
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.KickMembers)
+        // Impedisce l'utilizzo del comando nei messaggi diretti (DM)
+        .setDMPermission(false),
 
     async execute(interaction) {
-        // Defers the reply as ephemeral initially.
-        await interaction.deferReply({ ephemeral: true });
+        // Differisce la risposta, rendendola pubblica fin da subito
+        await interaction.deferReply({ ephemeral: false });
 
         const guild = interaction.guild; // Get the Guild object (server)
         if (!guild) {
             return await interaction.editReply({
                 content: '❌ This command can only be used inside a server.',
-                ephemeral: true
+                ephemeral: true // Questo errore specifico rimane effimero per l'utente che ha sbagliato ad usarlo
             });
         }
 
@@ -57,7 +61,7 @@ module.exports = {
             .setImage(guild.bannerURL({ dynamic: true, size: 512 })) // Server banner (if present)
             .addFields(
                 {
-                    name: '🌐 Server Name', // New field for server name
+                    name: '🌐 Server Name',
                     value: `\`\`\`${guild.name}\`\`\``,
                     inline: false
                 },
@@ -68,7 +72,7 @@ module.exports = {
                 },
                 {
                     name: '👑 Owner',
-                    value: `\`\`\`${ownerUser.username}\`\`\``, // Ora mostra solo il nome dell'owner
+                    value: `\`${ownerUser.username}\``, // Ora singola riga copiabile
                     inline: false
                 },
                 {
@@ -115,7 +119,7 @@ Verification Level: ${guild.verificationLevel}
             .setFooter({ text: `Requested by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
             .setTimestamp(); // Adds the current timestamp
 
-        // Edit the deferred reply, making it public
-        await interaction.editReply({ embeds: [embed], ephemeral: false });
+        // The reply is already public due to deferReply({ ephemeral: false })
+        await interaction.editReply({ embeds: [embed] });
     },
 };
