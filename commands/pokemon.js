@@ -77,7 +77,7 @@ module.exports = {
                     { name: '<:K3_energy:1400829273236832337> Type', value: types, inline: true }, // More appropriate emoji for type
                     { name: '📏 Height', value: `${pokeData.height / 10} m`, inline: true },
                     { name: '⚖️ Weight', value: `${pokeData.weight / 10} kg`, inline: true },
-                    { name: '🌳 Generation', value: generation, inline: true } // Emoji for generation
+                    { name: '<:K3_pokeball:1401904419674783754> Generation', value: generation, inline: true } // Emoji for generation
                 )
             await interaction.editReply({ embeds: [embed] });
 
