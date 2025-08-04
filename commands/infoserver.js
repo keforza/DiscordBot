@@ -6,7 +6,7 @@ module.exports = {
         .setDescription('Mostra informazioni dettagliate su questo server Discord.'),
 
     async execute(interaction) {
-        // Differisce la risposta come effimera inizialmente, poi la renderemo pubblica con l'embed.
+        // Differisce la risposta per dare tempo al bot di raccogliere le informazioni.
         await interaction.deferReply({ ephemeral: true });
 
         const guild = interaction.guild; // Ottiene l'oggetto Guild (server)
@@ -17,15 +17,13 @@ module.exports = {
             });
         }
 
-        // --- Raccolta delle informazioni ---
+        // --- Raccolta e formattazione delle informazioni ---
 
-        // Conteggio membri (bot inclusi)
+        // Conteggio membri e bot
         const memberCount = guild.memberCount;
-        // Conteggio membri umani (escludendo i bot)
         const humanMembers = guild.members.cache.filter(member => !member.user.bot).size;
-        // Conteggio bot
         const botMembers = guild.members.cache.filter(member => member.user.bot).size;
-
+        
         // Conteggio canali
         const textChannels = guild.channels.cache.filter(channel => channel.type === ChannelType.GuildText).size;
         const voiceChannels = guild.channels.cache.filter(channel => channel.type === ChannelType.GuildVoice).size;
@@ -33,66 +31,70 @@ module.exports = {
         const totalChannels = guild.channels.cache.size;
 
         // Livello di boost
-        const boostLevel = guild.premiumTier; // 0, 1, 2, 3
+        const boostLevel = guild.premiumTier;
         const boostCount = guild.premiumSubscriptionCount || 0;
 
-        // Data di creazione del server
-        const creationDate = guild.createdAt.toLocaleDateString('it-IT', {
+        // Data di creazione del server formattata
+        const dateOptions = {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
-        });
-        const creationTime = guild.createdAt.toLocaleTimeString('it-IT', {
+            day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
-        });
+        };
+        const creationDateFormatted = guild.createdAt.toLocaleDateString('it-IT', dateOptions);
 
-        // --- Costruzione dell'Embed ---
+        // --- Costruzione dell'Embed con campi neri copiabili ---
         const embed = new EmbedBuilder()
-            .setColor('#5865F2') // Un bel blu Discord
+            .setColor('#2B2D31') // Colore nero, come nel tuo esempio userinfo
             .setTitle(`📊 Informazioni sul Server: ${guild.name}`)
             .setThumbnail(guild.iconURL({ dynamic: true, size: 256 })) // Icona del server
             .setImage(guild.bannerURL({ dynamic: true, size: 512 })) // Banner del server (se presente)
             .addFields(
                 {
                     name: '🆔 ID Server',
-                    value: `\`${guild.id}\``, // Formattato come blocco di codice copiabile
-                    inline: false // Campo a riga intera
-                },
-                {
-                    name: '👑 Proprietario',
-                    value: `<@${guild.ownerId}> (\`${guild.ownerId}\`)`, // Menziona il proprietario e mostra l'ID copiabile
+                    value: `\`\`\`${guild.id}\`\`\``,
                     inline: false
                 },
                 {
-                    name: '🗓️ Creato il',
-                    value: `${creationDate} alle ${creationTime}`,
+                    name: '👑 Proprietario',
+                    value: `\`\`\`${guild.ownerId}\`\`\``,
+                    inline: false
+                },
+                {
+                    name: 'Statistiche Membri',
+                    value: `\`\`\`
+Totali: ${memberCount}
+Umani: ${humanMembers}
+Bot: ${botMembers}
+\`\`\``,
                     inline: true
                 },
                 {
-                    name: '👥 Membri',
-                    value: `Totali: \`${memberCount}\`\nUmani: \`${humanMembers}\`\nBot: \`${botMembers}\``,
+                    name: 'Statistiche Canali',
+                    value: `\`\`\`
+Totali: ${totalChannels}
+Testo: ${textChannels}
+Vocali: ${voiceChannels}
+Categorie: ${categoryChannels}
+\`\`\``,
                     inline: true
                 },
                 {
-                    name: '💬 Canali',
-                    value: `Testo: \`${textChannels}\`\nVocali: \`${voiceChannels}\`\nCategorie: \`${categoryChannels}\`\nTotali: \`${totalChannels}\``,
-                    inline: true
+                    name: 'Info Creazione & Boost',
+                    value: `\`\`\`
+Creato il: ${creationDateFormatted}
+Livello Boost: ${boostLevel} (${boostCount} boosts)
+\`\`\``,
+                    inline: false
                 },
                 {
-                    name: '✨ Livello Boost',
-                    value: `Livello \`${boostLevel}\` (${boostCount} Boosts)`,
-                    inline: true
-                },
-                {
-                    name: '🌍 Regione',
-                    value: `\`${guild.preferredLocale || 'N/D'}\``, // Lingua preferita del server
-                    inline: true
-                },
-                {
-                    name: '🔒 Livello di Verifica',
-                    value: `\`${guild.verificationLevel}\``, // Nessuno, Basso, Medio, Alto, Massima
-                    inline: true
+                    name: 'Altre Info',
+                    value: `\`\`\`
+Regione: ${guild.preferredLocale || 'N/D'}
+Livello Verifica: ${guild.verificationLevel}
+\`\`\``,
+                    inline: false
                 }
             )
             .setFooter({ text: `Richiesto da ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
