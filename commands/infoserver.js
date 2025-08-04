@@ -3,38 +3,43 @@ const { SlashCommandBuilder, EmbedBuilder, ChannelType } = require('discord.js')
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('infoserver')
-        .setDescription('Mostra informazioni dettagliate su questo server Discord.'),
+        .setDescription('Shows detailed information about this Discord server.'),
 
     async execute(interaction) {
-        // Differisce la risposta per dare tempo al bot di raccogliere le informazioni.
+        // Defers the reply as ephemeral initially.
         await interaction.deferReply({ ephemeral: true });
 
-        const guild = interaction.guild; // Ottiene l'oggetto Guild (server)
+        const guild = interaction.guild; // Get the Guild object (server)
         if (!guild) {
             return await interaction.editReply({
-                content: '❌ Questo comando può essere usato solo all\'interno di un server.',
+                content: '❌ This command can only be used inside a server.',
                 ephemeral: true
             });
         }
 
-        // --- Raccolta e formattazione delle informazioni ---
+        // --- Gathering and formatting information ---
 
-        // Conteggio membri e bot
-        const memberCount = guild.memberCount;
-        const humanMembers = guild.members.cache.filter(member => !member.user.bot).size;
-        const botMembers = guild.members.cache.filter(member => member.user.bot).size;
+        // Fetch the owner's user object to get their username
+        const ownerUser = await interaction.client.users.fetch(guild.ownerId);
         
-        // Conteggio canali
+        // Member count (including bots)
+        const memberCount = guild.memberCount;
+        // Human members (excluding bots)
+        const humanMembers = guild.members.cache.filter(member => !member.user.bot).size;
+        // Bot members
+        const botMembers = guild.members.cache.filter(member => member.user.bot).size;
+
+        // Channel count
         const textChannels = guild.channels.cache.filter(channel => channel.type === ChannelType.GuildText).size;
         const voiceChannels = guild.channels.cache.filter(channel => channel.type === ChannelType.GuildVoice).size;
         const categoryChannels = guild.channels.cache.filter(channel => channel.type === ChannelType.GuildCategory).size;
         const totalChannels = guild.channels.cache.size;
 
-        // Livello di boost
-        const boostLevel = guild.premiumTier;
+        // Boost level
+        const boostLevel = guild.premiumTier; // 0, 1, 2, 3
         const boostCount = guild.premiumSubscriptionCount || 0;
 
-        // Data di creazione del server formattata
+        // Server creation date formatted
         const dateOptions = {
             year: 'numeric',
             month: 'long',
@@ -42,65 +47,75 @@ module.exports = {
             hour: '2-digit',
             minute: '2-digit'
         };
-        const creationDateFormatted = guild.createdAt.toLocaleDateString('it-IT', dateOptions);
+        const creationDateFormatted = guild.createdAt.toLocaleDateString('en-US', dateOptions);
 
-        // --- Costruzione dell'Embed con campi neri copiabili ---
+        // --- Building the Embed with copiable black fields ---
         const embed = new EmbedBuilder()
-            .setColor('#2B2D31') // Colore nero, come nel tuo esempio userinfo
-            .setTitle(`📊 Informazioni sul Server: ${guild.name}`)
-            .setThumbnail(guild.iconURL({ dynamic: true, size: 256 })) // Icona del server
-            .setImage(guild.bannerURL({ dynamic: true, size: 512 })) // Banner del server (se presente)
+            .setColor('#2B2D31') // Dark grey color, similar to your userinfo example
+            .setTitle(`📊 Server Information`) // Title without the server name here
+            .setThumbnail(guild.iconURL({ dynamic: true, size: 256 })) // Server icon
+            .setImage(guild.bannerURL({ dynamic: true, size: 512 })) // Server banner (if present)
             .addFields(
                 {
-                    name: '🆔 ID Server',
+                    name: '🌐 Server Name', // New field for server name
+                    value: `\`\`\`${guild.name}\`\`\``,
+                    inline: false
+                },
+                {
+                    name: '🆔 Server ID',
                     value: `\`\`\`${guild.id}\`\`\``,
                     inline: false
                 },
                 {
-                    name: '👑 Proprietario',
-                    value: `\`\`\`${guild.ownerId}\`\`\``,
+                    name: '👑 Owner',
+                    value: `\`\`\`${ownerUser.username}\`\`\``, // Ora mostra solo il nome dell'owner
                     inline: false
                 },
                 {
-                    name: 'Statistiche Membri',
+                    name: '👥 Member Statistics',
                     value: `\`\`\`
-Totali: ${memberCount}
-Umani: ${humanMembers}
-Bot: ${botMembers}
+Total: ${memberCount}
+Humans: ${humanMembers}
+Bots: ${botMembers}
 \`\`\``,
                     inline: true
                 },
                 {
-                    name: 'Statistiche Canali',
+                    name: '💬 Channel Statistics',
                     value: `\`\`\`
-Totali: ${totalChannels}
-Testo: ${textChannels}
-Vocali: ${voiceChannels}
-Categorie: ${categoryChannels}
+Total: ${totalChannels}
+Text: ${textChannels}
+Voice: ${voiceChannels}
+Categories: ${categoryChannels}
 \`\`\``,
                     inline: true
                 },
                 {
-                    name: 'Info Creazione & Boost',
+                    name: '✨ Nitro Boost Info',
                     value: `\`\`\`
-Creato il: ${creationDateFormatted}
-Livello Boost: ${boostLevel} (${boostCount} boosts)
+Level: ${boostLevel}
+Boosts: ${boostCount}
 \`\`\``,
                     inline: false
                 },
                 {
-                    name: 'Altre Info',
+                    name: '🗓️ Creation Date',
+                    value: `\`\`\`${creationDateFormatted}\`\`\``,
+                    inline: true
+                },
+                {
+                    name: '🌍 Region & Verification',
                     value: `\`\`\`
-Regione: ${guild.preferredLocale || 'N/D'}
-Livello Verifica: ${guild.verificationLevel}
+Region: ${guild.preferredLocale || 'N/A'}
+Verification Level: ${guild.verificationLevel}
 \`\`\``,
-                    inline: false
+                    inline: true
                 }
             )
-            .setFooter({ text: `Richiesto da ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
-            .setTimestamp(); // Aggiunge il timestamp attuale
+            .setFooter({ text: `Requested by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
+            .setTimestamp(); // Adds the current timestamp
 
-        // Modifica la risposta deferita, rendendola pubblica
+        // Edit the deferred reply, making it public
         await interaction.editReply({ embeds: [embed], ephemeral: false });
     },
 };
