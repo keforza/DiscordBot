@@ -48,8 +48,6 @@ module.exports = {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
         };
         const creationDateFormatted = guild.createdAt.toLocaleDateString('en-US', dateOptions);
 
