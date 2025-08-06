@@ -116,7 +116,7 @@ module.exports = {
                 { name: 'User ID', value: `\`\`\`${targetUser.id}\`\`\``, inline: false },
                 
                 { 
-                    name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}]`, 
+                    name: `Roles`, 
                     value: roles.length > 0 ? roles : 'No roles', 
                     inline: false 
                 },
