@@ -1,9 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js');
 
-// Helper function to calculate relative time in English
+// Helper function to calculate relative time in Italian
 function getRelativeTimeAgo(date) {
     const now = new Date();
-    const diff = now.getTime() - date.getTime(); // Difference in milliseconds
+    const diff = now.getTime() - date.getTime(); // Differenza in millisecondi
 
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -16,26 +16,26 @@ function getRelativeTimeAgo(date) {
     let result = [];
 
     if (years > 0) {
-        result.push(`${years} year${years === 1 ? '' : 's'}`);
+        result.push(`${years} anno${years === 1 ? '' : 'i'}`);
     }
     const remainingMonths = months % 12;
     if (remainingMonths > 0 && years < 10) { 
-        result.push(`${remainingMonths} month${remainingMonths === 1 ? '' : 's'}`);
+        result.push(`${remainingMonths} mese${remainingMonths === 1 ? '' : 'i'}`);
     }
     
     if (years === 0 && months === 0 && days > 0) {
-        result.push(`${days} day${days === 1 ? '' : 's'}`);
+        result.push(`${days} giorno${days === 1 ? '' : 'i'}`);
     } else if (years === 0 && months === 0 && days === 0 && hours > 0) {
-        result.push(`${hours} hour${hours === 1 ? '' : 's'}`);
+        result.push(`${hours} ora${hours === 1 ? '' : 'e'}`);
     } else if (years === 0 && months === 0 && days === 0 && hours === 0 && minutes > 0) {
-        result.push(`${minutes} minute${minutes === 1 ? '' : 's'}`);
+        result.push(`${minutes} minuto${minutes === 1 ? '' : 'i'}`);
     } else if (years === 0 && months === 0 && days === 0 && hours === 0 && minutes === 0 && seconds > 0) {
-        result.push(`${seconds} second${seconds === 1 ? '' : 's'}`);
+        result.push(`${seconds} secondo${seconds === 1 ? '' : 'i'}`);
     } else if (result.length === 0) {
-        return "less than a minute";
+        return "meno di un minuto";
     }
 
-    return result.join(' and ') + ' ago'; 
+    return result.join(' e ') + ' fa'; 
 }
 
 
@@ -47,19 +47,10 @@ module.exports = {
             option.setName('user')
                 .setDescription('Select a user to display information for (default: yourself).')
                 .setRequired(false))
-        // *************** MODIFICA QUI: Aggiunto il permesso per i moderatori ***************
         .setDefaultMemberPermissions(PermissionsBitField.Flags.KickMembers) // Solo utenti con permesso KickMembers
         .setDMPermission(false), // Questo comando non può essere usato nei DM
-        // ************************************************************************************
 
     async execute(interaction) {
-        // --- RIMOSSO: Il controllo dei permessi è ora gestito da .setDefaultMemberPermissions() ---
-        // if (!interaction.member.permissions.has(PermissionsBitField.Flags.KickMembers)) {
-        //     await interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
-        //     return; 
-        // }
-        // --- FINE: Rimozione ---
-
         try {
             await interaction.deferReply({ ephemeral: false }); 
         } catch (error) {
@@ -86,29 +77,27 @@ module.exports = {
             .join(', ');
 
         const nickname = targetMember.nickname || 'No nickname';
-        const isBoosting = targetMember.premiumSince ? 'Yes' : 'No'; 
+        const isBoosting = targetMember.premiumSince ? 'Sì' : 'No'; // Tradotto 'Yes'/'No' in italiano
 
-        // Date format: MM/DD/YYYY HH:MM (no comma)
+        // Date format: GG/MM/AA HH:MM
         const dateOptions = {
-            year: 'numeric', 
+            year: '2-digit', 
             month: '2-digit', 
-            // *************** CORREZIONE QUI: 'Dday' a 'day' ***************
             day: '2-digit', 
-            // **************************************************************
             hour: '2-digit', 
             minute: '2-digit', 
             hour12: false 
         };
 
-        const accountCreatedDateFormatted = targetUser.createdAt.toLocaleString('en-US', dateOptions).replace(', ', ' ');
-        const joinedServerDateFormatted = targetMember.joinedAt.toLocaleString('en-US', dateOptions).replace(', ', ' ');
+        const accountCreatedDateFormatted = targetUser.createdAt.toLocaleString('it-IT', dateOptions);
+        const joinedServerDateFormatted = targetMember.joinedAt.toLocaleString('it-IT', dateOptions);
 
         const accountCreatedPeriod = getRelativeTimeAgo(targetUser.createdAt);
         const joinedServerPeriod = getRelativeTimeAgo(targetMember.joinedAt);
 
-        let globalPermissionsValue = 'None';
+        let globalPermissionsValue = 'Nessuno'; // Tradotto 'None'
         if (targetMember.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            globalPermissionsValue = '👑 Administrator (all permissions)';
+            globalPermissionsValue = '👑 Amministratore (tutti i permessi)'; // Tradotto
         } else {
             const readablePermissions = targetMember.permissions.toArray()
                 .map(perm => perm.replace(/([A-Z])/g, ' $1').trim())
@@ -127,23 +116,23 @@ module.exports = {
                 { name: 'User ID', value: `\`\`\`${targetUser.id}\`\`\``, inline: false },
                 
                 { 
-                    name: `Roles [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}]`, 
-                    value: roles.length > 0 ? roles : 'No roles', 
+                    name: `Ruoli [${targetMember.roles.cache.filter(r => r.id !== interaction.guild.id).size}]`, // Tradotto 'Roles'
+                    value: roles.length > 0 ? roles : 'Nessun ruolo', // Tradotto 'No roles'
                     inline: false 
                 },
 
                 { name: 'Nickname', value: `\`\`\`${nickname}\`\`\``, inline: false },
-                { name: 'Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
+                { name: 'Sta boostando', value: `\`\`\`${isBoosting}\`\`\``, inline: false }, // Tradotto 'Is boosting'
 
-                { name: 'Global permissions', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, 
+                { name: 'Permessi globali', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, // Tradotto 'Global permissions'
 
                 { 
-                    name: 'Joined this server on (MM/DD/YYYY)', 
+                    name: 'Entrato nel server il (GG/MM/AA)', // Aggiornato formato data e tradotto
                     value: `\`\`\`${joinedServerDateFormatted} (${joinedServerPeriod})\`\`\``, 
                     inline: false 
                 },
                 { 
-                    name: 'Account created on (MM/DD/YYYY)', 
+                    name: 'Account creato il (GG/MM/AA)', // Aggiornato formato data e tradotto
                     value: `\`\`\`${accountCreatedDateFormatted} (${accountCreatedPeriod})\`\`\``, 
                     inline: false 
                 }
