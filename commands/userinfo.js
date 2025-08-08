@@ -96,7 +96,7 @@ module.exports = {
 
         let globalPermissionsValue = 'None';
         if (targetMember.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            globalPermissionsValue = '<:K3_crown:1289915588856119359> Administrator (all permissions)';
+            globalPermissionsValue = "<:K3_crown:1289915588856119359> 'Administrator (all permissions)'";
         } else {
             const readablePermissions = targetMember.permissions.toArray()
                 .map(perm => perm.replace(/([A-Z])/g, ' $1').trim())
