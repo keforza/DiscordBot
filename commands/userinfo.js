@@ -96,7 +96,7 @@ module.exports = {
 
         let globalPermissionsValue = 'None';
         if (targetMember.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            globalPermissionsValue = "<:K3_crown:1289915588856119359> 'Administrator (all permissions)'";
+            globalPermissionsValue = 'Administrator (all permissions)';
         } else {
             const readablePermissions = targetMember.permissions.toArray()
                 .map(perm => perm.replace(/([A-Z])/g, ' $1').trim())
@@ -121,9 +121,9 @@ module.exports = {
                 },
 
                 { name: 'Nickname', value: `\`\`\`${nickname}\`\`\``, inline: false },
-                { name: '<:K3_boost:1403369335657070766> Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
+                { name: '<:K3_boost:1403369335657070766>Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
 
-                { name: 'Global permissions', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, 
+                { name: '<:K3_crown:1289915588856119359> Global permissions', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, 
 
                 { 
                     name: 'Joined this server on', // Aggiornato il nome del campo
