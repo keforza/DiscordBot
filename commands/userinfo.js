@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js');
 
-// Helper function to calculate relative time in English
 function getRelativeTimeAgo(date) {
     const now = new Date();
     const diff = now.getTime() - date.getTime(); // Difference in milliseconds
@@ -42,12 +41,12 @@ function getRelativeTimeAgo(date) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('userinfo')
-        .setDescription('Shows detailed information about a server user. All fields copyable.')
+        .setDescription('Shows detailed information about a server user')
         .addUserOption(option =>
             option.setName('user')
-                .setDescription('Select a user to display information for (default: yourself).')
-                .setRequired(false))
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.KickMembers)
+                .setDescription('Select a user to display information for')
+                .setRequired(true))
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageMessages)
         .setDMPermission(false),
 
     async execute(interaction) {
@@ -65,7 +64,7 @@ module.exports = {
             targetMember = await interaction.guild.members.fetch(targetUser.id);
         } catch (error) {
             console.error(`Error fetching member for user ${targetUser.id}: ${error}`);
-            return interaction.editReply({ content: '❌ Could not find the specified user on this server.', ephemeral: true });
+            return interaction.editReply({ content: '<:K3_thumbdown:1288115353142165607> Could not find the specified user on this server', ephemeral: true });
         }
 
         // --- Prepare Embed Data ---
@@ -97,7 +96,7 @@ module.exports = {
 
         let globalPermissionsValue = 'None';
         if (targetMember.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            globalPermissionsValue = '👑 Administrator (all permissions)';
+            globalPermissionsValue = '<:K3_crown:1289915588856119359> Administrator (all permissions)';
         } else {
             const readablePermissions = targetMember.permissions.toArray()
                 .map(perm => perm.replace(/([A-Z])/g, ' $1').trim())
@@ -122,17 +121,17 @@ module.exports = {
                 },
 
                 { name: 'Nickname', value: `\`\`\`${nickname}\`\`\``, inline: false },
-                { name: 'Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
+                { name: '<:K3_boost:1403369335657070766> Is boosting', value: `\`\`\`${isBoosting}\`\`\``, inline: false },
 
                 { name: 'Global permissions', value: `\`\`\`${globalPermissionsValue}\`\`\``, inline: false }, 
 
                 { 
-                    name: 'Joined this server on (DD/MM/YY)', // Aggiornato il nome del campo
+                    name: 'Joined this server on', // Aggiornato il nome del campo
                     value: `\`\`\`${joinedServerDateFormatted} (${joinedServerPeriod})\`\`\``, 
                     inline: false 
                 },
                 { 
-                    name: 'Account created on (DD/MM/YY)', // Aggiornato il nome del campo
+                    name: 'Account created on',
                     value: `\`\`\`${accountCreatedDateFormatted} (${accountCreatedPeriod})\`\`\``, 
                     inline: false 
                 }
