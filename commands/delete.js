@@ -3,15 +3,22 @@ const { PermissionsBitField } = require('discord.js');
 module.exports = {
     data: {
         name: 'delete',
-        description: 'Deletes a number of messages (moderators only)',
+        description: 'Deletes a number of messages',
         default_member_permissions: PermissionsBitField.Flags.ManageMessages.toString(),
         dm_permission: false,
         options: [
             {
-                name: 'count',
+                name: 'number',
                 description: 'Number of messages to delete (max 100)',
                 type: 4, // INTEGER
                 required: true
+            },
+
+            {
+                name: 'member',
+                description: 'Delete messages from a specific member',
+                type : 6, //USER
+                required: false
             }
         ]
     },
@@ -21,15 +28,7 @@ module.exports = {
         // Rendi la risposta iniziale effimera
         await interaction.deferReply({ ephemeral: true });
 
-        if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-            // Usa editReply dopo il defer
-            return await interaction.editReply({
-                content: '🚫 Only moderators can use this command.',
-                ephemeral: true
-            });
-        }
-
-        const count = interaction.options.getInteger('count');
+        const count = interaction.options.getInteger('number');
         if (count < 1 || count > 100) {
             // Usa editReply dopo il defer
             return await interaction.editReply({
