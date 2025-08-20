@@ -43,6 +43,14 @@ module.exports = {
                         id
                         site
                     }
+                    studios(isMain: true) {
+                        edges {
+                            node {
+                                name
+                            }
+                        }
+                    }
+                    isAdult
                 }
             }
         `;
@@ -81,6 +89,11 @@ module.exports = {
             const genres = anime.genres && anime.genres.length > 0
                 ? anime.genres.join(', ')
                 : 'N/A';
+            
+            // --- Studios Management ---
+            const studios = anime.studios && anime.studios.edges.length > 0
+                ? anime.studios.edges.map(edge => edge.node.name).join(', ')
+                : 'N/A';
 
             // --- Score Management ---
             const score = anime.averageScore ? `${anime.averageScore} / 100` : 'N/A';
@@ -108,15 +121,17 @@ module.exports = {
                 const day = anime.startDate.day || '';
                 const year = anime.startDate.year || '';
                 
-                // Construct the date string, handling potential missing day or month
                 const dateParts = [];
                 if (month) dateParts.push(month);
                 if (day) dateParts.push(day);
-                if (dateParts.length > 1) dateParts[dateParts.length - 1] += ','; // Add comma after day
+                if (dateParts.length > 1) dateParts[dateParts.length - 1] += ',';
                 if (year) dateParts.push(year);
                 
                 airedDate = dateParts.join(' ');
             }
+            
+            // --- Rating Management ---
+            const rating = anime.isAdult ? 'Adults Only' : 'Everyone';
 
             const embed = new EmbedBuilder()
                 .setColor('#FF99CC')
@@ -130,8 +145,8 @@ module.exports = {
                     { name: '<:K3_onair:1291676245259456552> Aired', value: airedDate, inline: true },
                     { name: '<:K3_star:1289918161294065724> Score', value: score, inline: true },
                     { name: '🏷️ Genres', value: genres, inline: true },
-                    { name: '🏢 Studio(s)', value: 'N/A', inline: true },
-                    { name: '🔞 Rating', value: 'N/A', inline: true }
+                    { name: '🏢 Studio(s)', value: studios, inline: true },
+                    { name: '🔞 Rating', value: rating, inline: true }
                 );
             
             if (trailerUrl !== 'N/A') {
