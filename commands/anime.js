@@ -16,70 +16,26 @@ module.exports = {
 
         const searchQuery = interaction.options.getString('search');
 
-        const query = `
-            query ($search: String) {
-                Media (search: $search, type: ANIME) {
-                    id
-                    siteUrl
-                    title {
-                        romaji
-                        english
-                        native
-                    }
-                    coverImage {
-                        large
-                    }
-                    episodes
-                    status
-                    startDate {
-                        year
-                        month
-                        day
-                    }
-                    genres
-                    averageScore
-                    description(asHtml: false)
-                    trailer {
-                        id
-                        site
-                    }
-                    studios(isMain: true) {
-                        edges {
-                            node {
-                                name
-                            }
-                        }
-                    }
-                    isAdult
-                }
-            }
-        `;
-
-        const variables = {
-            search: searchQuery
-        };
-
         try {
-            const response = await axios.post('https://graphql.anilist.co', {
-                query: query,
-                variables: variables
-            });
+            const response = await axios.get(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchQuery)}&limit=1`);
+            const data = response.data;
 
-            const anime = response.data.data.Media;
-
-            if (!anime) {
+            if (!response.data || !data.data || data.data.length === 0) {
                 return interaction.editReply({
                     content: `❌ Anime "${searchQuery}" not found. Try a different or more specific name.`,
                     ephemeral: true
                 });
             }
 
-            // --- Synopsis Management ---
-            let synopsis = anime.description || 'No synopsis available.';
-            synopsis = synopsis.replace(/<br>/g, '\n').replace(/<i>|<\/i>/g, '').trim();
+            const anime = data.data[0];
 
-            if (synopsis.length > 350) {
-                synopsis = synopsis.substring(0, 347) + '...';
+            //Synopsis
+            let synopsis = anime.synopsis || 'No synopsis available.';
+            synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, '').trim();
+            synopsis = synopsis.replace(/\[Source:.*?\]/gi, '').trim();
+
+            if (synopsis.length > 1000) {
+                synopsis = synopsis.substring(0, 997) + '...';
             }
             if (synopsis.length === 0) {
                 synopsis = 'No synopsis available.';
@@ -87,63 +43,31 @@ module.exports = {
 
             // --- Genres Management ---
             const genres = anime.genres && anime.genres.length > 0
-                ? anime.genres.join(', ')
-                : 'N/A';
-            
-            // --- Studios Management ---
-            const studios = anime.studios && anime.studios.edges.length > 0
-                ? anime.studios.edges.map(edge => edge.node.name).join(', ')
+                ? anime.genres.map(g => g.name).join(', ')
                 : 'N/A';
 
-            // --- Score Management ---
-            const score = anime.averageScore ? `${anime.averageScore} / 100` : 'N/A';
+            // --- Studios Management ---
+            const studios = anime.studios && anime.studios.length > 0
+                ? anime.studios.map(s => s.name).join(', ')
+                : 'N/A';
+
+            // --- Rating Management ---
+            const rating = anime.rating || 'N/A';
 
             // --- Trailer Management ---
-            let trailerUrl = 'N/A';
-            if (anime.trailer && anime.trailer.site === 'youtube') {
-                trailerUrl = `https://www.youtube.com/watch?v=${anime.trailer.id}`;
-            }
-
-            // --- Status Formatting (English) ---
-            let status = anime.status || 'N/A';
-            if (status !== 'N/A') {
-                status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-            }
-            
-            // --- Date Formatting ---
-            let airedDate = 'N/A';
-            if (anime.startDate && anime.startDate.year) {
-                const monthNames = [
-                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-                ];
-                const month = monthNames[anime.startDate.month - 1] || '';
-                const day = anime.startDate.day || '';
-                const year = anime.startDate.year || '';
-                
-                const dateParts = [];
-                if (month) dateParts.push(month);
-                if (day) dateParts.push(day);
-                if (dateParts.length > 1) dateParts[dateParts.length - 1] += ',';
-                if (year) dateParts.push(year);
-                
-                airedDate = dateParts.join(' ');
-            }
-            
-            // --- Rating Management ---
-            const rating = anime.isAdult ? 'Adults Only' : 'Everyone';
+            const trailerUrl = anime.trailer && anime.trailer.url ? anime.trailer.url : 'N/A';
 
             const embed = new EmbedBuilder()
                 .setColor('#FF99CC')
-                .setTitle(anime.title.english || anime.title.romaji || anime.title.native)
-                .setURL(anime.siteUrl)
-                .setThumbnail(anime.coverImage.large || null)
+                .setTitle(anime.title)
+                .setURL(anime.url)
+                .setThumbnail(anime.images.jpg.image_url || null)
                 .addFields(
                     { name: '📝 Synopsis', value: synopsis, inline: false },
                     { name: '<:K3_episodes:1400824494540460043> Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
-                    { name: '<:K3_approved:1400814077596663808> Status', value: status, inline: true },
-                    { name: '<:K3_onair:1291676245259456552> Aired', value: airedDate, inline: true },
-                    { name: '<:K3_star:1289918161294065724> Score', value: score, inline: true },
+                    { name: '<:K3_approved:1400814077596663808> Status', value: anime.status || 'N/A', inline: true },
+                    { name: '<:K3_onair:1291676245259456552> Aired', value: anime.aired.string || 'N/A', inline: true },
+                    { name: '<:K3_star:1289918161294065724> Score', value: anime.score ? `${anime.score} / 10` : 'N/A', inline: true },
                     { name: '🏷️ Genres', value: genres, inline: true },
                     { name: '🏢 Studio(s)', value: studios, inline: true },
                     { name: '🔞 Rating', value: rating, inline: true }
@@ -152,13 +76,13 @@ module.exports = {
             if (trailerUrl !== 'N/A') {
                 embed.addFields({ name: '📺 Trailer', value: `[Watch Trailer](${trailerUrl})`, inline: false });
             }
-            
+
             await interaction.editReply({ embeds: [embed] });
 
         } catch (error) {
-            console.error('Error fetching anime data from AniList:', error);
+            console.error('Error fetching anime data:', error);
             await interaction.editReply({
-                content: `❌ An unexpected error occurred while fetching anime data from AniList.`,
+                content: `❌ An unexpected error occurred while fetching anime data. Please ensure the bot has internet access and the Jikan API is available.`,
                 ephemeral: true
             });
         }
