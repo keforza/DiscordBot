@@ -1,10 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const fetch = require('node-fetch');
-const deepl = require('deepl-node'); // 1. Importa la libreria di DeepL
-
-// 2. Inserisci qui la tua API Key di DeepL
-// Ti consiglio di usare un file .env per nasconderla, ma per semplicità la mettiamo qui per ora.
-const deepLAuthKey = 'TUA_API_KEY_QUI'; // SOSTITUISCI CON LA TUA API KEY
+const axios = require('axios'); // Importa la libreria Axios
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,40 +16,59 @@ module.exports = {
 
         const searchQuery = interaction.options.getString('search');
 
-        try {
-            const response = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchQuery)}&limit=1`);
-            const data = await response.json();
+        // La query GraphQL che specifica i dati che vogliamo
+        const query = `
+            query ($search: String) {
+                Media (search: $search, type: ANIME) {
+                    id
+                    siteUrl
+                    title {
+                        romaji
+                        english
+                        native
+                    }
+                    coverImage {
+                        large
+                    }
+                    episodes
+                    status
+                    season
+                    seasonYear
+                    genres
+                    averageScore
+                    description(asHtml: false)
+                    trailer {
+                        id
+                        site
+                    }
+                }
+            }
+        `;
 
-            if (!response.ok || !data || !data.data || data.data.length === 0) {
-                const errorMessage = data && data.message ? data.message : `Anime "${searchQuery}" not found. Try a different or more specific name.`;
+        const variables = {
+            search: searchQuery
+        };
+
+        try {
+            const response = await axios.post('https://graphql.anilist.co', {
+                query: query,
+                variables: variables
+            });
+
+            const anime = response.data.data.Media;
+
+            if (!anime) {
                 return interaction.editReply({
-                    content: `❌ ${errorMessage}`,
+                    content: `❌ Anime "${searchQuery}" not found. Try a different or more specific name.`,
                     ephemeral: true
                 });
             }
 
-            const anime = data.data[0];
+            // --- Estrazione e pulizia dei dati dall'API di AniList ---
+            let synopsis = anime.description || 'No synopsis available.';
+            // Rimuove eventuali tag HTML che AniList a volte include
+            synopsis = synopsis.replace(/<br>/g, '\n').replace(/<i>|<\/i>/g, '').trim();
 
-            let synopsis = anime.synopsis || 'No synopsis available.';
-            synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, '').trim();
-            synopsis = synopsis.replace(/\[Source:.*?\]/gi, '').trim();
-
-            // 3. Traduzione della sinossi in italiano
-            if (synopsis !== 'No synopsis available.' && deepLAuthKey !== 'TUA_API_KEY_QUI') {
-                try {
-                    const translator = new deepl.Translator(deepLAuthKey);
-                    const result = await translator.translateText(synopsis, null, 'it');
-                    synopsis = result.text;
-                } catch (translationError) {
-                    console.error('Error during translation:', translationError);
-                    // Non bloccare l'esecuzione in caso di errore di traduzione, usa la sinossi originale.
-                    synopsis = `*(Could not translate synopsis, displaying original in English)*\n\n` + synopsis;
-                }
-            } else if (deepLAuthKey === 'TUA_API_KEY_QUI') {
-                synopsis = `*(Please add your DeepL API key to enable translation)*\n\n` + synopsis;
-            }
-
-            // Trunca la sinossi se troppo lunga
             if (synopsis.length > 1000) {
                 synopsis = synopsis.substring(0, 997) + '...';
             }
@@ -62,47 +76,47 @@ module.exports = {
                 synopsis = 'No synopsis available.';
             }
 
-            // ... (il resto del tuo codice rimane invariato)
+            // I generi sono già un array, li uniamo
             const genres = anime.genres && anime.genres.length > 0
-                ? anime.genres.map(g => g.name).join(', ')
+                ? anime.genres.join(', ')
                 : 'N/A';
 
-            const studios = anime.studios && anime.studios.length > 0
-                ? anime.studios.map(s => s.name).join(', ')
-                : 'N/A';
+            // Il punteggio è su una scala da 1 a 100
+            const score = anime.averageScore ? `${anime.averageScore} / 100` : 'N/A';
 
-            const rating = anime.rating || 'N/A';
-            const trailerUrl = anime.trailer && anime.trailer.url ? anime.trailer.url : 'N/A';
+            // Costruiamo il link al trailer se esiste
+            let trailerUrl = 'N/A';
+            if (anime.trailer && anime.trailer.site === 'youtube') {
+                trailerUrl = `https://www.youtube.com/watch?v=${anime.trailer.id}`;
+            }
 
             const embed = new EmbedBuilder()
                 .setColor('#FF99CC')
-                .setTitle(anime.title)
-                .setURL(anime.url)
-                .setDescription(`*Alternative Titles: ${anime.title_japanese || 'N/A'}*`)
-                .setThumbnail(anime.images.jpg.image_url || null)
+                .setTitle(anime.title.english || anime.title.romaji || anime.title.native)
+                .setURL(anime.siteUrl)
+                .setDescription(`*Titoli alternativi: ${anime.title.native || 'N/A'}*`)
+                .setThumbnail(anime.coverImage.large || null)
                 .addFields(
-                    { name: '📝 Sinossi', value: synopsis, inline: false }, // Aggiornato a "Sinossi"
-                    { name: '<:K3_episodes:1400824494540460043> Episodi', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true }, // Aggiornato a "Episodi"
-                    { name: '<:K3_approved:1400814077596663808> Stato', value: anime.status || 'N/A', inline: true }, // Aggiornato a "Stato"
-                    { name: '<:K3_onair:1291676245259456552> In onda', value: anime.aired.string || 'N/A', inline: true }, // Aggiornato a "In onda"
-                    { name: '<:K3_star:1289918161294065724> Voto', value: anime.score ? `${anime.score} / 10` : 'N/A', inline: true }, // Aggiornato a "Voto"
-                    { name: '🏷️ Generi', value: genres, inline: true }, // Aggiornato a "Generi"
-                    { name: '🏢 Studio', value: studios, inline: true },
-                    { name: '🔞 Rating', value: rating, inline: true }
+                    { name: '📝 Synopsis', value: synopsis, inline: false },
+                    { name: '<:K3_episodes:1400824494540460043> Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
+                    { name: '<:K3_approved:1400814077596663808> Status', value: anime.status || 'N/A', inline: true },
+                    { name: '<:K3_onair:1291676245259456552> Aired', value: anime.season && anime.seasonYear ? `${anime.season} ${anime.seasonYear}` : 'N/A', inline: true },
+                    { name: '<:K3_star:1289918161294065724> Score', value: score, inline: true },
+                    { name: '🏷️ Genres', value: genres, inline: true },
+                    { name: '🏢 Studio(s)', value: 'N/A', inline: true }, // AniList non fornisce lo studio direttamente in questa query
+                    { name: '🔞 Rating', value: 'N/A', inline: true } // AniList non fornisce un campo "Rating"
                 );
-
+            
             if (trailerUrl !== 'N/A') {
-                embed.addFields(
-                    { name: '📺 Trailer', value: `[Guarda il Trailer](${trailerUrl})`, inline: false } // Aggiornato a "Guarda il Trailer"
-                );
+                embed.addFields({ name: '📺 Trailer', value: `[Watch Trailer](${trailerUrl})`, inline: false });
             }
-
+            
             await interaction.editReply({ embeds: [embed] });
 
         } catch (error) {
-            console.error('Error fetching anime data:', error);
+            console.error('Error fetching anime data from AniList:', error);
             await interaction.editReply({
-                content: `❌ An unexpected error occurred while fetching anime data.`,
+                content: `❌ An unexpected error occurred while fetching anime data from AniList.`,
                 ephemeral: true
             });
         }
