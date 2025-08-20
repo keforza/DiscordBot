@@ -72,6 +72,7 @@ module.exports = {
         const roles = targetMember.roles.cache
             .filter(role => role.name !== '@everyone')
             .sort((a, b) => b.position - a.position)
+            
             .map(role => `<@&${role.id}>`) 
             .join(', ');
 
@@ -100,7 +101,7 @@ module.exports = {
         } else {
             const readablePermissions = targetMember.permissions.toArray()
                 .map(perm => perm.replace(/([A-Z])/g, ' $1').trim())
-                .join(', ');
+                .join(', ');z
             if (readablePermissions.length > 0) {
                 globalPermissionsValue = readablePermissions;
             }
