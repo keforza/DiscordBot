@@ -29,7 +29,7 @@ module.exports = {
 
             const anime = data.data[0];
 
-            // --- Synopsis Management ---
+            //Synopsis
             let synopsis = anime.synopsis || 'No synopsis available.';
             synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, '').trim();
             synopsis = synopsis.replace(/\[Source:.*?\]/gi, '').trim();
