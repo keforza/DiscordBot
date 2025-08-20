@@ -1,73 +1,69 @@
-const { PermissionsBitField } = require('discord.js');
+const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 
 module.exports = {
-    data: {
-        name: 'delete',
-        description: 'Deletes a number of messages',
-        default_member_permissions: PermissionsBitField.Flags.ManageMessages.toString(),
-        dm_permission: false,
-        options: [
-            {
-                name: 'number',
-                description: 'Number of messages to delete (max 100)',
-                type: 4, // INTEGER
-                required: false
-            },
+    // Usiamo SlashCommandBuilder per una definizione del comando più chiara e moderna
+    data: new SlashCommandBuilder()
+        .setName('delete')
+        .setDescription('Cancella un numero di messaggi')
+        .addIntegerOption(option =>
+            option.setName('numero')
+                .setDescription('Numero di messaggi da cancellare (massimo 100)')
+                .setRequired(true)
+                .setMinValue(1) // Aggiungiamo un limite minimo
+                .setMaxValue(100) // Aggiungiamo un limite massimo
+        )
+        .addUserOption(option =>
+            option.setName('utente')
+                .setDescription('Cancella messaggi da un utente specifico')
+                .setRequired(false)
+        )
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageMessages)
+        .setDMPermission(false),
 
-            {
-                name: 'member',
-                description: 'Delete messages from a specific member',
-                type : 6, //USER
-                required: false
-            }
-        ]
-    },
-    // Rimuoviamo 'ephemeralReply' come parametro, lo gestiremo direttamente
     async execute(interaction) {
-        // Defer della risposta all'inizio, dato che l'operazione di fetch e bulkDelete può richiedere tempo
-        // Rendi la risposta iniziale effimera
+        // Defer della risposta (effimera, visibile solo all'utente)
         await interaction.deferReply({ ephemeral: true });
 
-        const count = interaction.options.getInteger('number');
-        if (count < 1 || count > 100) {
-            // Usa editReply dopo il defer
-            return await interaction.editReply({
-                content: '❌ You can delete between 1 and 100 messages at a time.',
-                ephemeral: true
-            });
+        const count = interaction.options.getInteger('numero');
+        const member = interaction.options.getMember('utente');
+
+        // Se è stato specificato un utente, cerchiamo un numero maggiore di messaggi per avere un buffer
+        const fetchLimit = member ? 100 : count;
+
+        let messages = await interaction.channel.messages.fetch({ limit: fetchLimit });
+        let deletableMessages;
+
+        if (member) {
+            // Se un utente è stato specificato, filtriamo i messaggi solo di quell'utente
+            deletableMessages = messages.filter(
+                msg => msg.author.id === member.id && !msg.pinned && msg.deletable
+            ).first(count); // Prendiamo solo il numero di messaggi richiesto
+        } else {
+            // Altrimenti, filtriamo tutti i messaggi deletabili
+            deletableMessages = messages.filter(
+                msg => !msg.pinned && msg.deletable
+            );
         }
 
-        // Fetchiamo i messaggi (+1 per includere il messaggio del comando stesso se necessario)
-        // Non è necessario fare +1 se l'intento è solo cancellare i messaggi precedenti al comando
-        // Se vuoi cancellare anche il messaggio del comando, allora fetch(limit: count + 1) e deletableMessages.size - 1 è corretto nel reply
-        const messages = await interaction.channel.messages.fetch({ limit: count }); // Limit to 'count' messages
-        const deletableMessages = messages.filter(msg => !msg.pinned && msg.deletable); // Filtra anche i messaggi pinnati che non si possono cancellare
-
+        // Gestione del caso in cui non ci sono messaggi da cancellare
         if (deletableMessages.size === 0) {
-            // Usa editReply dopo il defer
             return await interaction.editReply({
-                content: 'No recent deletable messages found in the specified amount.',
-                ephemeral: true
+                content: '❌ Nessun messaggio recente da cancellare trovato in base ai criteri specificati.',
             });
         }
-
+        
         try {
-            // BulkDelete dei messaggi filtrati. 'true' per silenziare gli errori sui messaggi troppo vecchi.
             const deleted = await interaction.channel.bulkDelete(deletableMessages, true);
             
-            // Edita la risposta deferita con il risultato.
-            // Aggiungo un messaggio effimero di conferma
+            // Messaggio di conferma con il numero di messaggi cancellati
             await interaction.editReply({
-                content: `<:K3_approved:1400814077596663808> Deleted ${deleted.size} messages.`,
-                ephemeral: true
+                content: `<:K3_approved:1400814077596663808> Ho cancellato **${deleted.size}** messaggi.`,
             });
 
         } catch (error) {
-            console.error(error);
-            // Edita la risposta deferita in caso di errore.
+            console.error('Errore durante la cancellazione dei messaggi:', error);
             await interaction.editReply({
-                content: '❌ Error deleting messages. Make sure the bot has the necessary permissions and messages are not too old (Discord does not allow bulk deletion of messages older than 14 days).',
-                ephemeral: true
+                content: '❌ Errore durante la cancellazione dei messaggi. Assicurati che il bot abbia i permessi necessari e che i messaggi non siano più vecchi di 14 giorni.',
             });
         }
     }
