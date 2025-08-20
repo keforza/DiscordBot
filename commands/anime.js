@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const axios = require('axios'); // Importa la libreria Axios
+const axios = require('axios');
+const deepl = require('deepl-node');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,7 +17,6 @@ module.exports = {
 
         const searchQuery = interaction.options.getString('search');
 
-        // La query GraphQL che specifica i dati che vogliamo
         const query = `
             query ($search: String) {
                 Media (search: $search, type: ANIME) {
@@ -32,14 +32,22 @@ module.exports = {
                     }
                     episodes
                     status
-                    season
-                    seasonYear
                     genres
                     averageScore
                     description(asHtml: false)
                     trailer {
                         id
                         site
+                    }
+                    startDate {
+                        year
+                        month
+                        day
+                    }
+                    endDate {
+                        year
+                        month
+                        day
                     }
                 }
             }
@@ -64,9 +72,7 @@ module.exports = {
                 });
             }
 
-            // --- Estrazione e pulizia dei dati dall'API di AniList ---
             let synopsis = anime.description || 'No synopsis available.';
-            // Rimuove eventuali tag HTML che AniList a volte include
             synopsis = synopsis.replace(/<br>/g, '\n').replace(/<i>|<\/i>/g, '').trim();
 
             if (synopsis.length > 1000) {
@@ -76,35 +82,55 @@ module.exports = {
                 synopsis = 'No synopsis available.';
             }
 
-            // I generi sono già un array, li uniamo
+            // --- Synopsis Translation to Italian ---
+            if (process.env.DEEPL_AUTH_KEY) {
+                const translator = new deepl.Translator(process.env.DEEPL_AUTH_KEY);
+                try {
+                    const translation = await translator.translateText(synopsis, null, 'it');
+                    synopsis = translation.text;
+                } catch (translationError) {
+                    console.error('Error translating synopsis:', translationError);
+                }
+            } else {
+                console.warn('DeepL API key not found. Synopsis will not be translated.');
+            }
+
             const genres = anime.genres && anime.genres.length > 0
                 ? anime.genres.join(', ')
                 : 'N/A';
 
-            // Il punteggio è su una scala da 1 a 100
             const score = anime.averageScore ? `${anime.averageScore} / 100` : 'N/A';
 
-            // Costruiamo il link al trailer se esiste
             let trailerUrl = 'N/A';
             if (anime.trailer && anime.trailer.site === 'youtube') {
                 trailerUrl = `https://www.youtube.com/watch?v=${anime.trailer.id}`;
+            }
+
+            const startDate = anime.startDate.year ? `${anime.startDate.month || ''}/${anime.startDate.day || ''}/${anime.startDate.year}`.replace(/^\/+|\/+$/g, '').replace(/\/\/+/g, '/') : 'N/A';
+            const endDate = anime.endDate.year ? `${anime.endDate.month || ''}/${anime.endDate.day || ''}/${anime.endDate.year}`.replace(/^\/+|\/+$/g, '').replace(/\/\/+/g, '/') : 'N/A';
+            const airedDate = (startDate === 'N/A' && endDate === 'N/A') ? 'N/A' : `${startDate} - ${endDate}`;
+
+            // --- Status Formatting (Title Case) ---
+            let status = anime.status || 'N/A';
+            if (status !== 'N/A') {
+                status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
             }
 
             const embed = new EmbedBuilder()
                 .setColor('#FF99CC')
                 .setTitle(anime.title.english || anime.title.romaji || anime.title.native)
                 .setURL(anime.siteUrl)
-                .setDescription(`*Titoli alternativi: ${anime.title.native || 'N/A'}*`)
+                .setDescription(`*Alternative Titles: ${anime.title.native || 'N/A'}*`)
                 .setThumbnail(anime.coverImage.large || null)
                 .addFields(
                     { name: '📝 Synopsis', value: synopsis, inline: false },
                     { name: '<:K3_episodes:1400824494540460043> Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
-                    { name: '<:K3_approved:1400814077596663808> Status', value: anime.status || 'N/A', inline: true },
-                    { name: '<:K3_onair:1291676245259456552> Aired', value: anime.season && anime.seasonYear ? `${anime.season} ${anime.seasonYear}` : 'N/A', inline: true },
+                    { name: '<:K3_approved:1400814077596663808> Status', value: status, inline: true },
+                    { name: '<:K3_onair:1291676245259456552> Aired', value: airedDate, inline: true },
                     { name: '<:K3_star:1289918161294065724> Score', value: score, inline: true },
                     { name: '🏷️ Genres', value: genres, inline: true },
-                    { name: '🏢 Studio(s)', value: 'N/A', inline: true }, // AniList non fornisce lo studio direttamente in questa query
-                    { name: '🔞 Rating', value: 'N/A', inline: true } // AniList non fornisce un campo "Rating"
+                    { name: '🏢 Studio(s)', value: 'N/A', inline: true },
+                    { name: '🔞 Rating', value: 'N/A', inline: true }
                 );
             
             if (trailerUrl !== 'N/A') {
