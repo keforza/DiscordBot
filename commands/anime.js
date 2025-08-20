@@ -31,8 +31,11 @@ module.exports = {
                     }
                     episodes
                     status
-                    season
-                    seasonYear
+                    startDate {
+                        year
+                        month
+                        day
+                    }
                     genres
                     averageScore
                     description(asHtml: false)
@@ -91,21 +94,40 @@ module.exports = {
             // --- Status Formatting (English) ---
             let status = anime.status || 'N/A';
             if (status !== 'N/A') {
-                 // Convert 'FINISHED' to 'Finished', 'RELEASING' to 'Releasing', etc.
                 status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            }
+            
+            // --- Date Formatting ---
+            let airedDate = 'N/A';
+            if (anime.startDate && anime.startDate.year) {
+                const monthNames = [
+                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                ];
+                const month = monthNames[anime.startDate.month - 1] || '';
+                const day = anime.startDate.day || '';
+                const year = anime.startDate.year || '';
+                
+                // Construct the date string, handling potential missing day or month
+                const dateParts = [];
+                if (month) dateParts.push(month);
+                if (day) dateParts.push(day);
+                if (dateParts.length > 1) dateParts[dateParts.length - 1] += ','; // Add comma after day
+                if (year) dateParts.push(year);
+                
+                airedDate = dateParts.join(' ');
             }
 
             const embed = new EmbedBuilder()
                 .setColor('#FF99CC')
                 .setTitle(anime.title.english || anime.title.romaji || anime.title.native)
                 .setURL(anime.siteUrl)
-                .setDescription(`*Alternative Titles: ${anime.title.native || 'N/A'}*`)
                 .setThumbnail(anime.coverImage.large || null)
                 .addFields(
                     { name: '📝 Synopsis', value: synopsis, inline: false },
                     { name: '<:K3_episodes:1400824494540460043> Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
                     { name: '<:K3_approved:1400814077596663808> Status', value: status, inline: true },
-                    { name: '<:K3_onair:1291676245259456552> Aired', value: anime.season && anime.seasonYear ? `${anime.season} ${anime.seasonYear}` : 'N/A', inline: true },
+                    { name: '<:K3_onair:1291676245259456552> Aired', value: airedDate, inline: true },
                     { name: '<:K3_star:1289918161294065724> Score', value: score, inline: true },
                     { name: '🏷️ Genres', value: genres, inline: true },
                     { name: '🏢 Studio(s)', value: 'N/A', inline: true },
