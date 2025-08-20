@@ -16,23 +16,56 @@ module.exports = {
 
         const searchQuery = interaction.options.getString('search');
 
-        try {
-            const response = await axios.get(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchQuery)}&limit=1`);
-            const data = response.data;
+        const query = `
+            query ($search: String) {
+                Media (search: $search, type: ANIME) {
+                    id
+                    siteUrl
+                    title {
+                        romaji
+                        english
+                        native
+                    }
+                    coverImage {
+                        large
+                    }
+                    episodes
+                    status
+                    season
+                    seasonYear
+                    genres
+                    averageScore
+                    description(asHtml: false)
+                    trailer {
+                        id
+                        site
+                    }
+                }
+            }
+        `;
 
-            if (!response.data || !data.data || data.data.length === 0) {
+        const variables = {
+            search: searchQuery
+        };
+
+        try {
+            const response = await axios.post('https://graphql.anilist.co', {
+                query: query,
+                variables: variables
+            });
+
+            const anime = response.data.data.Media;
+
+            if (!anime) {
                 return interaction.editReply({
                     content: `❌ Anime "${searchQuery}" not found. Try a different or more specific name.`,
                     ephemeral: true
                 });
             }
 
-            const anime = data.data[0];
-
-            //Synopsis
-            let synopsis = anime.synopsis || 'No synopsis available.';
-            synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, '').trim();
-            synopsis = synopsis.replace(/\[Source:.*?\]/gi, '').trim();
+            // --- Synopsis Management ---
+            let synopsis = anime.description || 'No synopsis available.';
+            synopsis = synopsis.replace(/<br>/g, '\n').replace(/<i>|<\/i>/g, '').trim();
 
             if (synopsis.length > 1000) {
                 synopsis = synopsis.substring(0, 997) + '...';
@@ -43,46 +76,52 @@ module.exports = {
 
             // --- Genres Management ---
             const genres = anime.genres && anime.genres.length > 0
-                ? anime.genres.map(g => g.name).join(', ')
+                ? anime.genres.join(', ')
                 : 'N/A';
 
-            // --- Studios Management ---
-            const studios = anime.studios && anime.studios.length > 0
-                ? anime.studios.map(s => s.name).join(', ')
-                : 'N/A';
-
-            // --- Rating Management ---
-            const rating = anime.rating || 'N/A';
+            // --- Score Management ---
+            const score = anime.averageScore ? `${anime.averageScore} / 100` : 'N/A';
 
             // --- Trailer Management ---
-            const trailerUrl = anime.trailer && anime.trailer.url ? anime.trailer.url : 'N/A';
+            let trailerUrl = 'N/A';
+            if (anime.trailer && anime.trailer.site === 'youtube') {
+                trailerUrl = `https://www.youtube.com/watch?v=${anime.trailer.id}`;
+            }
+
+            // --- Status Formatting (English) ---
+            let status = anime.status || 'N/A';
+            if (status !== 'N/A') {
+                 // Convert 'FINISHED' to 'Finished', 'RELEASING' to 'Releasing', etc.
+                status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            }
 
             const embed = new EmbedBuilder()
                 .setColor('#FF99CC')
-                .setTitle(anime.title)
-                .setURL(anime.url)
-                .setThumbnail(anime.images.jpg.image_url || null)
+                .setTitle(anime.title.english || anime.title.romaji || anime.title.native)
+                .setURL(anime.siteUrl)
+                .setDescription(`*Alternative Titles: ${anime.title.native || 'N/A'}*`)
+                .setThumbnail(anime.coverImage.large || null)
                 .addFields(
                     { name: '📝 Synopsis', value: synopsis, inline: false },
                     { name: '<:K3_episodes:1400824494540460043> Episodes', value: anime.episodes ? String(anime.episodes) : 'N/A', inline: true },
-                    { name: '<:K3_approved:1400814077596663808> Status', value: anime.status || 'N/A', inline: true },
-                    { name: '<:K3_onair:1291676245259456552> Aired', value: anime.aired.string || 'N/A', inline: true },
-                    { name: '<:K3_star:1289918161294065724> Score', value: anime.score ? `${anime.score} / 10` : 'N/A', inline: true },
+                    { name: '<:K3_approved:1400814077596663808> Status', value: status, inline: true },
+                    { name: '<:K3_onair:1291676245259456552> Aired', value: anime.season && anime.seasonYear ? `${anime.season} ${anime.seasonYear}` : 'N/A', inline: true },
+                    { name: '<:K3_star:1289918161294065724> Score', value: score, inline: true },
                     { name: '🏷️ Genres', value: genres, inline: true },
-                    { name: '🏢 Studio(s)', value: studios, inline: true },
-                    { name: '🔞 Rating', value: rating, inline: true }
+                    { name: '🏢 Studio(s)', value: 'N/A', inline: true },
+                    { name: '🔞 Rating', value: 'N/A', inline: true }
                 );
             
             if (trailerUrl !== 'N/A') {
                 embed.addFields({ name: '📺 Trailer', value: `[Watch Trailer](${trailerUrl})`, inline: false });
             }
-
+            
             await interaction.editReply({ embeds: [embed] });
 
         } catch (error) {
-            console.error('Error fetching anime data:', error);
+            console.error('Error fetching anime data from AniList:', error);
             await interaction.editReply({
-                content: `❌ An unexpected error occurred while fetching anime data. Please ensure the bot has internet access and the Jikan API is available.`,
+                content: `❌ An unexpected error occurred while fetching anime data from AniList.`,
                 ephemeral: true
             });
         }
