@@ -73,7 +73,7 @@ module.exports = {
                     { name: '🔞 Age rating', value: rating, inline: true }
                 );
             
-            if (trailerUrl !== 'NA') {
+            if (trailerUrl !== 'N/A') {
                 embed.addFields({ name: '📺 Trailer', value: `[Watch Trailer](${trailerUrl})`, inline: false });
             }
 
