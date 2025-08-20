@@ -6,8 +6,8 @@ module.exports = {
         .setName('anime')
         .setDescription('Searches for information about a specific anime.')
         .addStringOption(option =>
-            option.setName('search')
-                .setDescription('The name of the anime to search for.')
+            option.setName('name')
+                .setDescription('Name of the anime to search for.')
                 .setRequired(true)
         ),
 
@@ -34,8 +34,8 @@ module.exports = {
             synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, '').trim();
             synopsis = synopsis.replace(/\[Source:.*?\]/gi, '').trim();
 
-            if (synopsis.length > 1000) {
-                synopsis = synopsis.substring(0, 997) + '...';
+            if (synopsis.length > 350) {
+                synopsis = synopsis.substring(0, 347) + '...';
             }
             if (synopsis.length === 0) {
                 synopsis = 'No synopsis available.';
@@ -70,7 +70,7 @@ module.exports = {
                     { name: '<:K3_star:1289918161294065724> Score', value: anime.score ? `${anime.score} / 10` : 'N/A', inline: true },
                     { name: '🏷️ Genres', value: genres, inline: true },
                     { name: '🏢 Studio(s)', value: studios, inline: true },
-                    { name: '🔞 Rating', value: rating, inline: true }
+                    { name: '🔞 Age rating', value: rating, inline: true }
                 );
             
             if (trailerUrl !== 'N/A') {
