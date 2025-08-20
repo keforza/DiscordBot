@@ -78,8 +78,8 @@ module.exports = {
             let synopsis = anime.description || 'No synopsis available.';
             synopsis = synopsis.replace(/<br>/g, '\n').replace(/<i>|<\/i>/g, '').trim();
 
-            if (synopsis.length > 1000) {
-                synopsis = synopsis.substring(0, 997) + '...';
+            if (synopsis.length > 350) {
+                synopsis = synopsis.substring(0, 347) + '...';
             }
             if (synopsis.length === 0) {
                 synopsis = 'No synopsis available.';
