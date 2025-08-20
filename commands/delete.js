@@ -11,7 +11,7 @@ module.exports = {
                 name: 'number',
                 description: 'Number of messages to delete (max 100)',
                 type: 4, // INTEGER
-                required: true
+                required: false
             },
 
             {
