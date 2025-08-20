@@ -61,7 +61,6 @@ module.exports = {
                 .setColor('#FF99CC')
                 .setTitle(anime.title)
                 .setURL(anime.url)
-                .setDescription(`*Alternative Titles: ${anime.title_japanese || 'N/A'}*`)
                 .setThumbnail(anime.images.jpg.image_url || null)
                 .addFields(
                     { name: '📝 Synopsis', value: synopsis, inline: false },
