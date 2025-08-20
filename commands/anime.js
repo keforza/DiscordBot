@@ -14,7 +14,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
 
-        const searchQuery = interaction.options.getString('search');
+        const searchQuery = interaction.options.getString('name');
 
         try {
             const response = await axios.get(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(searchQuery)}&limit=1`);
