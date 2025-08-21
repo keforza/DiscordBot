@@ -15,12 +15,12 @@ module.exports = {
         .addStringOption(option =>
             option.setName('duration')
                 .setDescription('Duration of the mute (e.g., 10m, 1h, 1d)')
-                .setRequired(true)
+                .setRequired(false)
         )
         .addStringOption(option =>
             option.setName('reason')
                 .setDescription('Reason for the mute')
-                .setRequired(false)
+                .setRequired(true)
         )
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ModerateMembers)
         .setDMPermission(false),
@@ -86,12 +86,11 @@ module.exports = {
                         
                         const unmuteDmEmbed = new EmbedBuilder()
                             .setColor('#00FF00')
-                            .setTitle('You got unmuted')
+                            .setTitle('You got unmuted🔊    ')
                             .addFields(
                                 { name: 'Reason', value: `\`Expired\``, inline: false },
                                 { name: 'Responsible', value: `\`${interaction.client.user.tag}\``, inline: true }
                             )
-                            .setTimestamp();
                         
                         await member.send({ embeds: [unmuteDmEmbed] });
                     } catch (unmuteError) {
