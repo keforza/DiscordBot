@@ -39,9 +39,9 @@ module.exports = {
         const durationStr = interaction.options.getString('duration');
         const reason = interaction.options.getString('reason') || 'No reason specified';
 
-        if (!user) return interaction.reply(ephemeralReply('❌ User not found in the server.'));
-        if (user.id === interaction.user.id) return interaction.reply(ephemeralReply('❌ You cannot mute yourself.'));
-        if (!user.moderatable) return interaction.reply(ephemeralReply('❌ I cannot mute this user, role too high or missing permissions.'));
+        if (!user) return interaction.reply(ephemeralReply('<:K3_wrong:1407992234145611867> User not found in the server.'));
+        if (user.id === interaction.user.id) return interaction.reply(ephemeralReply('<:K3_wrong:1407992234145611867> You cannot mute yourself.'));
+        if (!user.moderatable) return interaction.reply(ephemeralReply('<:K3_wrong:1407992234145611867>  I cannot mute this user, role too high or missing permissions.'));
 
         const durationMs = parseDuration(durationStr);
         if (!durationMs) {
@@ -76,7 +76,7 @@ module.exports = {
                     )
                     .setTimestamp();
                 await user.send({ embeds: [dmEmbed] });
-                await interaction.reply(ephemeralReply(`🔇 ${user.user.tag} has been muted for ${durationStr}. Reason: ${reason}\n✅ User received a DM with details.`));
+                await interaction.reply(ephemeralReply(`🔇 ${user.user.tag} has been muted for ${durationStr}. Reason: ${reason}\n<:K3_approved:1400814077596663808> User received a DM with details.`));
             } catch (dmError) {
                 console.error(`<:K3_wrong:1407992234145611867> Could not send DM to ${user.user.tag}:`, dmError.message);
                 await interaction.reply(ephemeralReply(`🔇 ${user.user.tag} has been muted for ${durationStr}. Reason: ${reason}\n⚠️ Could not send a DM to the user (they might have DMs disabled).`));
