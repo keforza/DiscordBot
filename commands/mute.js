@@ -77,18 +77,22 @@ module.exports = {
                 ephemeral: false
             });
 
-            // --- The key part: Timeout to automatically unmute and send DM ---
+            // --- THIS IS THE PART THAT SENDS THE UNMUTE DM YOU WANT ---
             setTimeout(async () => {
-                // Check if the user is still muted before removing the role
                 const member = await interaction.guild.members.fetch(user.id).catch(() => null);
                 if (member && member.roles.cache.has(muteRole.id)) {
                     try {
                         await member.roles.remove(muteRole, 'Automatic mute ended');
-                        // Send unmute DM
+                        
                         const unmuteDmEmbed = new EmbedBuilder()
-                            .setColor('#00FF00')
-                            .setTitle('Your mute has ended!')
-                            .setDescription(`Your mute on the server **${interaction.guild.name}** has automatically ended. You can now interact again.`);
+                            .setColor('#00FF00') // Green color for unmuted
+                            .setTitle('You got unmuted')
+                            .addFields(
+                                { name: 'Reason', value: 'Expired', inline: true },
+                                { name: 'Responsible', value: `${interaction.client.user.tag}`, inline: true }
+                            )
+                            .setTimestamp();
+                        
                         await member.send({ embeds: [unmuteDmEmbed] });
                     } catch (unmuteError) {
                         console.error('Error removing automatic mute:', unmuteError);
