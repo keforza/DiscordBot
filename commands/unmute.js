@@ -54,7 +54,7 @@ module.exports = {
                     .setTitle('You got unmuted 🔊')
                     .addFields(
                         { name: 'Reason', value: `\`${reason}\``, inline: false },
-                        { name: 'Responsible', value: `\`${interaction.user.tag}\``, inline: true }
+                        { name: 'Responsible', value: `\`${interaction.clien.user.tag}\``, inline: true }
                     )
                     .setTimestamp();
                 await user.send({ embeds: [unmuteDmEmbed] });
