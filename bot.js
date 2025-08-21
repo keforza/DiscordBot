@@ -62,7 +62,7 @@ client.once('ready', async () => {
     const serverName = client.guilds.cache.first().name;
 
     // --- IMPOSTAZIONE ATTIVITÀ DEL BOT QUI ---
-    client.user.setActivity(`il server ${serverName}`, { type: ActivityType.Observing });
+    client.user.setActivity(`il server ${serverName}`, { type: ActivityType.Watching });
     // Puoi anche provare altre opzioni come:
     // client.user.setActivity('la community di Kappiani', { type: ActivityType.Watching });
     // client.user.setActivity('Benvenuti su Kappiani! ✨', { type: ActivityType.Custom });
