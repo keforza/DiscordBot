@@ -16,7 +16,7 @@ module.exports = {
         const guild = interaction.guild; // Get the Guild object (server)
         if (!guild) {
             return await interaction.editReply({
-                content: '❌ This command can only be used inside a server.',
+                content: '<:K3_wrong:1407992234145611867> This command can only be used inside a server.',
                 ephemeral: true // Questo errore specifico rimane effimero per l'utente che ha sbagliato ad usarlo
             });
         }

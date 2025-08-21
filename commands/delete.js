@@ -25,7 +25,7 @@ module.exports = {
         if (count < 1 || count > 100) {
             // Usa editReply dopo il defer
             return await interaction.editReply({
-                content: '❌ You can delete between 1 and 100 messages at a time.',
+                content: '<:K3_wrong:1407992234145611867> You can delete between 1 and 100 messages at a time.',
                 ephemeral: true
             });
         }
@@ -59,7 +59,7 @@ module.exports = {
             console.error(error);
             // Edita la risposta deferita in caso di errore.
             await interaction.editReply({
-                content: '❌ Error deleting messages. Make sure the bot has the necessary permissions and messages are not too old (Discord does not allow bulk deletion of messages older than 14 days).',
+                content: '<:K3_wrong:1407992234145611867> Error deleting messages. Make sure the bot has the necessary permissions and messages are not too old (Discord does not allow bulk deletion of messages older than 14 days).',
                 ephemeral: true
             });
         }

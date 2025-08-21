@@ -45,15 +45,15 @@ module.exports = {
 
         const durationMs = parseDuration(durationStr);
         if (!durationMs) {
-            return interaction.reply(ephemeralReply('❌ Invalid duration format. Use e.g., `10m`, `1h`, `1d`.'));
+            return interaction.reply(ephemeralReply('<:K3_wrong:1407992234145611867> Invalid duration format. Use e.g., `10m`, `1h`, `1d`.'));
         }
 
         const muteRole = await ensureMuteRole(interaction.guild);
-        if (!muteRole) return interaction.reply(ephemeralReply('❌ Internal error creating/retrieving Muted role.'));
+        if (!muteRole) return interaction.reply(ephemeralReply('<:K3_wrong:1407992234145611867> Internal error creating/retrieving Muted role.'));
 
         try {
             if (user.roles.cache.has(muteRole.id)) {
-                return interaction.reply(ephemeralReply('❌ User is already muted.'));
+                return interaction.reply(ephemeralReply('<:K3_wrong:1407992234145611867> User is already muted.'));
             }
 
             await user.roles.add(muteRole, `Mute by ${interaction.user.tag} for ${reason}`);
@@ -78,7 +78,7 @@ module.exports = {
                 await user.send({ embeds: [dmEmbed] });
                 await interaction.reply(ephemeralReply(`🔇 ${user.user.tag} has been muted for ${durationStr}. Reason: ${reason}\n✅ User received a DM with details.`));
             } catch (dmError) {
-                console.error(`❌ Could not send DM to ${user.user.tag}:`, dmError.message);
+                console.error(`<:K3_wrong:1407992234145611867> Could not send DM to ${user.user.tag}:`, dmError.message);
                 await interaction.reply(ephemeralReply(`🔇 ${user.user.tag} has been muted for ${durationStr}. Reason: ${reason}\n⚠️ Could not send a DM to the user (they might have DMs disabled).`));
             }
 
@@ -94,7 +94,7 @@ module.exports = {
                                 .setDescription(`Your mute on the server **${interaction.guild.name}** has automatically ended. You can now interact again.`);
                             await user.send({ embeds: [unmuteDmEmbed] });
                         } catch (unmuteDmError) {
-                            console.error(`❌ Could not send unmute DM to ${user.user.tag}:`, unmuteDmError.message);
+                            console.error(`<:K3_wrong:1407992234145611867> Could not send unmute DM to ${user.user.tag}:`, unmuteDmError.message);
                         }
                     } catch (e) {
                         console.error('Error removing automatic mute:', e);
@@ -104,7 +104,7 @@ module.exports = {
 
         } catch (error) {
             console.error('Error muting user:', error);
-            interaction.reply(ephemeralReply('❌ Error muting the user.'));
+            interaction.reply(ephemeralReply('<:K3_wrong:1407992234145611867> Error muting the user.'));
         }
     }
 };
