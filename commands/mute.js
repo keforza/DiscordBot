@@ -77,7 +77,7 @@ module.exports = {
                 ephemeral: false
             });
 
-            // --- THIS IS THE PART THAT SENDS THE UNMUTE DM YOU WANT ---
+            // THIS IS THE PART THAT SENDS THE UNMUTE DM
             setTimeout(async () => {
                 const member = await interaction.guild.members.fetch(user.id).catch(() => null);
                 if (member && member.roles.cache.has(muteRole.id)) {
@@ -85,11 +85,11 @@ module.exports = {
                         await member.roles.remove(muteRole, 'Automatic mute ended');
                         
                         const unmuteDmEmbed = new EmbedBuilder()
-                            .setColor('#00FF00') // Green color for unmuted
+                            .setColor('#00FF00')
                             .setTitle('You got unmuted')
                             .addFields(
-                                { name: 'Reason', value: `Expired`, inline: false },
-                                { name: 'Responsible', value: `${interaction.client.user.tag}`, inline: true }
+                                { name: 'Reason', value: `\`Expired\``, inline: false },
+                                { name: 'Responsible', value: `\`${interaction.client.user.tag}\``, inline: true }
                             )
                             .setTimestamp();
                         
