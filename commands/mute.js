@@ -20,13 +20,13 @@ module.exports = {
                 name: 'duration',
                 description: 'Duration of the mute (e.g., 10m, 1h, 1d)',
                 type: 3, // STRING
-                required: true
+                required: false
             },
             {
                 name: 'reason',
                 description: 'Reason for the mute',
                 type: 3, // STRING
-                required: false
+                required: true
             }
         ]
     },
