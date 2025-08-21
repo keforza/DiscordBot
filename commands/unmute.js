@@ -19,16 +19,16 @@ module.exports = {
 
         const user = interaction.options.getMember('user');
         if (!user) {
-            return interaction.editReply({ content: '❌ User not found in the server.' });
+            return interaction.editReply({ content: '<:K3_wrong:1407992234145611867> User not found in the server.' });
         }
 
         const muteRole = await ensureMuteRole(interaction.guild);
         if (!muteRole) {
-            return interaction.editReply({ content: '❌ Muted role not found or created.' });
+            return interaction.editReply({ content: '<:K3_wrong:1407992234145611867> Muted role not found or created.' });
         }
 
         if (!user.roles.cache.has(muteRole.id)) {
-            return interaction.editReply({ content: '❌ User is not muted.' });
+            return interaction.editReply({ content: '<:K3_wrong:1407992234145611867> User is not muted.' });
         }
 
         try {
@@ -36,7 +36,7 @@ module.exports = {
             
             // Send public confirmation
             await interaction.editReply({ 
-                content: `🔈 ${user.user.tag} has been unmuted.`,
+                content: `🔊 ${user.user.tag} has been unmuted.`,
                 ephemeral: false
             });
 
@@ -48,11 +48,11 @@ module.exports = {
                     .setDescription(`You have been manually unmuted on the server **${interaction.guild.name}** by **${interaction.user.tag}**. You can now interact again.`);
                 await user.send({ embeds: [unmuteDmEmbed] });
             } catch (dmError) {
-                console.error(`❌ Could not send unmute DM to ${user.user.tag}:`, dmError.message);
+                console.error(`<:K3_wrong:1407992234145611867> Could not send unmute DM to ${user.user.tag}:`, dmError.message);
             }
         } catch (error) {
             console.error('Error removing mute:', error);
-            interaction.editReply({ content: '❌ Error removing mute. Check bot permissions.' });
+            interaction.editReply({ content: '<:K3_wrong:1407992234145611867> Error removing mute. Check bot permissions.' });
         }
     }
 };

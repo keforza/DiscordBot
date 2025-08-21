@@ -58,7 +58,7 @@ module.exports = {
             try {
                 const dmEmbed = new EmbedBuilder()
                     .setColor('#FF0000')
-                    .setTitle('You have been muted!')
+                    .setTitle('You have been muted!🔇')
                     .setDescription(`You have been muted on the server **${interaction.guild.name}** by **${interaction.user.tag}**.`)
                     .addFields(
                         { name: 'Reason', value: reason, inline: true },
@@ -88,7 +88,7 @@ module.exports = {
                             .setColor('#00FF00') // Green color for unmuted
                             .setTitle('You got unmuted')
                             .addFields(
-                                { name: 'Reason', value: 'Expired', inline: true },
+                                { name: 'Reason', value: 'Expired', inline: false },
                                 { name: 'Responsible', value: `${interaction.client.user.tag} (BOT)`, inline: true }
                             )
                             .setTimestamp();
