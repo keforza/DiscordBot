@@ -1,41 +1,46 @@
 // commands/unmute.js
-const { EmbedBuilder, PermissionsBitField } = require('discord.js');
-const { ensureMuteRole } = require('../utils/roleManager'); // Import the helper function
+const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js');
+const { ensureMuteRole } = require('../utils/roleManager');
 
 module.exports = {
-    data: {
-        name: 'unmute',
-        description: 'Unmutes a user',
-        default_member_permissions: PermissionsBitField.Flags.ModerateMembers.toString(),
-        dm_permission: false,
-        options: [
-            {
-                name: 'user',
-                description: 'User to unmute',
-                type: 6, // USER
-                required: true
-            }
-        ]
-    },
-    async execute(interaction, ephemeralReply) {
-        if (!interaction.member.permissions.has(PermissionsBitField.Flags.ModerateMembers)) {
-            return interaction.reply(ephemeralReply('🚫 You do not have permission to unmute members.'));
-        }
+    data: new SlashCommandBuilder()
+        .setName('unmute')
+        .setDescription('Unmutes a user')
+        .addUserOption(option =>
+            option.setName('user')
+                .setDescription('User to unmute')
+                .setRequired(true)
+        )
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ModerateMembers)
+        .setDMPermission(false),
+
+    async execute(interaction) {
+        await interaction.deferReply({ ephemeral: true });
 
         const user = interaction.options.getMember('user');
-        if (!user) return interaction.reply(ephemeralReply('❌ User not found in the server.'));
+        if (!user) {
+            return interaction.editReply({ content: '❌ User not found in the server.' });
+        }
 
-        const muteRole = await ensureMuteRole(interaction.guild); // Use the helper function
-        if (!muteRole) return interaction.reply(ephemeralReply('❌ Muted role not found or created.'));
+        const muteRole = await ensureMuteRole(interaction.guild);
+        if (!muteRole) {
+            return interaction.editReply({ content: '❌ Muted role not found or created.' });
+        }
 
         if (!user.roles.cache.has(muteRole.id)) {
-            return interaction.reply(ephemeralReply('❌ User is not muted.'));
+            return interaction.editReply({ content: '❌ User is not muted.' });
         }
 
         try {
             await user.roles.remove(muteRole, `Unmute by ${interaction.user.tag}`);
-            await interaction.reply(ephemeralReply(`🔈 ${user.user.tag} has been unmuted.`));
+            
+            // Send public confirmation
+            await interaction.editReply({ 
+                content: `🔈 ${user.user.tag} has been unmuted.`,
+                ephemeral: false
+            });
 
+            // Try to send a DM to the unmuted user
             try {
                 const unmuteDmEmbed = new EmbedBuilder()
                     .setColor('#00FF00')
@@ -47,7 +52,7 @@ module.exports = {
             }
         } catch (error) {
             console.error('Error removing mute:', error);
-            interaction.reply(ephemeralReply('❌ Error removing mute.'));
+            interaction.editReply({ content: '❌ Error removing mute. Check bot permissions.' });
         }
     }
 };
