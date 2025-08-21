@@ -54,7 +54,7 @@ module.exports = {
         // --- Building the Embed with copiable black fields ---
         const embed = new EmbedBuilder()
             .setColor('#2B2D31') // Dark grey color, similar to your userinfo example
-            .setTitle(`📊 Server Information`) // Title without the server name here
+            .setTitle(`<:K3_server:1407995896527982673> Server Information`) // Title without the server name here
             .setThumbnail(guild.iconURL({ dynamic: true, size: 256 })) // Server icon
             .setImage(guild.bannerURL({ dynamic: true, size: 512 })) // Server banner (if present)
             .addFields(
@@ -64,12 +64,12 @@ module.exports = {
                     inline: false
                 },
                 {
-                    name: '🆔 Server ID',
+                    name: '<:K3_id:1407994227333533716> Server ID',
                     value: `\`\`\`${guild.id}\`\`\``,
                     inline: false
                 },
                 {
-                    name: '👑 Owner',
+                    name: '<:K3_crown:1289915588856119359> Owner',
                     value: `\`${ownerUser.username}\``, // Ora singola riga copiabile
                     inline: false
                 },
@@ -93,7 +93,7 @@ Categories: ${categoryChannels}
                     inline: true
                 },
                 {
-                    name: '✨ Nitro Boost Info',
+                    name: '<:K3_boost:1403369335657070766> Server Boost Info',
                     value: `\`\`\`
 Level: ${boostLevel}
 Boosts: ${boostCount}
