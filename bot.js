@@ -59,9 +59,10 @@ for (const file of interactionFiles) {
 
 client.once('ready', async () => {
     console.log(`✅ Bot Online come ${client.user.tag}!`);
+    const serverName = client.guilds.cache.first().name;
 
     // --- IMPOSTAZIONE ATTIVITÀ DEL BOT QUI ---
-    client.user.setActivity('kappiani.serveminecraft.net', { type: ActivityType.Playing });
+    client.user.setActivity(`il server ${serverName}`, { type: ActivityType.Observing });
     // Puoi anche provare altre opzioni come:
     // client.user.setActivity('la community di Kappiani', { type: ActivityType.Watching });
     // client.user.setActivity('Benvenuti su Kappiani! ✨', { type: ActivityType.Custom });
