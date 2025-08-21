@@ -4,20 +4,22 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('infoserver')
         .setDescription('Shows detailed information about this Discord server.')
-        // Rende il comando utilizzabile solo da chi ha il permesso di espellere membri (moderatori)
+        // Makes the command usable only by those with the Kick Members permission
         .setDefaultMemberPermissions(PermissionsBitField.Flags.KickMembers)
-        // Impedisce l'utilizzo del comando nei messaggi diretti (DM)
+        // Prevents the command from being used in direct messages (DMs)
         .setDMPermission(false),
 
     async execute(interaction) {
-        // Differisce la risposta, rendendola pubblica fin da subito
+        // Defer the reply, making it publicly visible from the start
         await interaction.deferReply({ ephemeral: false });
 
         const guild = interaction.guild; // Get the Guild object (server)
         if (!guild) {
-            return await interaction.editReply({
+            // This specific error should be ephemeral if a user tries to use it in a DM
+            // The deferReply from above would have failed, so we can use a direct reply
+            return await interaction.reply({
                 content: '<:K3_wrong:1407992234145611867> This command can only be used inside a server.',
-                ephemeral: true // Questo errore specifico rimane effimero per l'utente che ha sbagliato ad usarlo
+                ephemeral: true
             });
         }
 
@@ -26,12 +28,18 @@ module.exports = {
         // Fetch the owner's user object to get their username
         const ownerUser = await interaction.client.users.fetch(guild.ownerId);
         
-        // Member count (including bots)
-        const memberCount = guild.memberCount;
-        // Human members (excluding bots)
-        const humanMembers = guild.members.cache.filter(member => !member.user.bot).size;
-        // Bot members
-        const botMembers = guild.members.cache.filter(member => member.user.bot).size;
+        // Member count (including bots) is always accurate from the API
+        const totalMembers = guild.memberCount;
+
+        // Fetch all members to get an accurate bot count.
+        // This requires the GUILD_MEMBERS intent to be enabled for your bot.
+        const members = await guild.members.fetch();
+
+        // Count bots from the fetched members
+        const botMembers = members.filter(member => member.user.bot).size;
+        
+        // Calculate human members by subtracting bots from the total
+        const humanMembers = totalMembers - botMembers;
 
         // Channel count
         const textChannels = guild.channels.cache.filter(channel => channel.type === ChannelType.GuildText).size;
@@ -70,13 +78,13 @@ module.exports = {
                 },
                 {
                     name: '<:K3_crown:1289915588856119359> Owner',
-                    value: `\`${ownerUser.username}\``, // Ora singola riga copiabile
+                    value: `\`${ownerUser.username}\``,
                     inline: false
                 },
                 {
                     name: '👥 Member Statistics',
                     value: `\`\`\`
-Total: ${memberCount}
+Total: ${totalMembers}
 Humans: ${humanMembers}
 Bots: ${botMembers}
 \`\`\``,
@@ -117,7 +125,6 @@ Verification Level: ${guild.verificationLevel}
             .setFooter({ text: `Requested by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
             .setTimestamp(); // Adds the current timestamp
 
-        // The reply is already public due to deferReply({ ephemeral: false })
         await interaction.editReply({ embeds: [embed] });
     },
 };
