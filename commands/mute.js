@@ -88,8 +88,8 @@ module.exports = {
                             .setColor('#00FF00') // Green color for unmuted
                             .setTitle('You got unmuted')
                             .addFields(
-                                { name: 'Reason', inline: true,  value: 'Expired', inline: true },
-                                { name: 'Responsible', inline: true, value: `${interaction.client.user.tag}`, inline: true }
+                                { name: 'Reason', value: 'Expired', inline: true },
+                                { name: 'Responsible', value: `${interaction.client.user.tag} (BOT)`, inline: true }
                             )
                             .setTimestamp();
                         
