@@ -1,4 +1,3 @@
-// commands/mute.js
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { parseDuration } = require('../utils/durationParser');
 const { ensureMuteRole } = require('../utils/roleManager');
@@ -13,14 +12,14 @@ module.exports = {
                 .setRequired(true)
         )
         .addStringOption(option =>
-            option.setName('duration')
-                .setDescription('Duration of the mute (e.g., 10m, 1h, 1d)')
-                .setRequired(false)
-        )
-        .addStringOption(option =>
             option.setName('reason')
                 .setDescription('Reason for the mute')
                 .setRequired(true)
+        )
+        .addStringOption(option =>
+            option.setName('duration')
+                .setDescription('Duration of the mute (e.g., 10m, 1h, 1d)')
+                .setRequired(false)
         )
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ModerateMembers)
         .setDMPermission(false),
@@ -54,7 +53,6 @@ module.exports = {
             const muteEndTime = new Date(Date.now() + durationMs);
             const formattedEndTime = `<t:${Math.floor(muteEndTime.getTime() / 1000)}:R>`;
 
-            // Send DM to the muted user
             try {
                 const dmEmbed = new EmbedBuilder()
                     .setColor('#FF0000')
@@ -71,27 +69,25 @@ module.exports = {
                 console.error(`Could not send DM to ${user.user.tag}:`, dmError.message);
             }
 
-            // Public confirmation message
             await interaction.editReply({
                 content: `🔇 **${user.user.tag}** has been muted for **${durationStr}**. Reason: **${reason}**`,
                 ephemeral: false
             });
 
-            // THIS IS THE PART THAT SENDS THE UNMUTE DM
             setTimeout(async () => {
                 const member = await interaction.guild.members.fetch(user.id).catch(() => null);
                 if (member && member.roles.cache.has(muteRole.id)) {
                     try {
                         await member.roles.remove(muteRole, 'Automatic mute ended');
-                        
+
                         const unmuteDmEmbed = new EmbedBuilder()
                             .setColor('#00FF00')
-                            .setTitle('You got unmuted🔊    ')
+                            .setTitle('You got unmuted🔊')
                             .addFields(
                                 { name: 'Reason', value: `\`Expired\``, inline: false },
                                 { name: 'Responsible', value: `\`${interaction.client.user.tag}\``, inline: true }
-                            )
-                        
+                            );
+
                         await member.send({ embeds: [unmuteDmEmbed] });
                     } catch (unmuteError) {
                         console.error('Error removing automatic mute:', unmuteError);
