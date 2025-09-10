@@ -1,4 +1,3 @@
-// commands/twitch.js
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fetch = require('node-fetch');
 
@@ -11,13 +10,11 @@ module.exports = {
                 .setDescription('Inserisci il nome del canale da cercare')
                 .setRequired(true)),
     async execute(interaction) {
-        // Defer della risposta per evitare timeout, poiché le chiamate API potrebbero richiedere tempo.
         await interaction.deferReply();
 
         const search = interaction.options.getString('search');
         try {
             // --- Passo 1: Ottenere un Access Token dall'API di Twitch ---
-            // Questo token è necessario per tutte le richieste API.
             const tokenRes = await fetch('https://id.twitch.tv/oauth2/token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -74,9 +71,9 @@ module.exports = {
 
             // --- Passo 5: Creare e inviare l'embed ---
             const embed = new EmbedBuilder()
-                .setColor('#9146FF') // Colore viola di Twitch
+                .setColor('#9146FF')
                 .setTitle(user.display_name)
-                .setURL(`https://www.twitch.tv/${user.login}`) // Aggiunge un link diretto al canale
+                .setURL(`https://www.twitch.tv/${user.login}`)
                 .setThumbnail(user.profile_image_url)
                 .setDescription(user.description || 'Nessuna descrizione disponibile.')
                 .addFields(
@@ -85,12 +82,13 @@ module.exports = {
                 );
 
             if (stream) {
-                // Se lo streamer è live, aggiungi le informazioni sulla live
+                // Se lo streamer è live, aggiungi le informazioni sulla live e il link
                 embed.addFields(
                     { name: 'Stato', value: '**LIVE** 🔴', inline: false },
                     { name: '📺 Titolo', value: stream.title, inline: true },
                     { name: '🎮 Gioco', value: stream.game_name, inline: true },
-                    { name: '👀 Spettatori', value: stream.viewer_count.toLocaleString('it-IT'), inline: true }
+                    { name: '👀 Spettatori', value: stream.viewer_count.toLocaleString('it-IT'), inline: true },
+                    { name: '🔗 Link alla Stream', value: `[Guarda la live qui](https://www.twitch.tv/${user.login})`, inline: false }
                 );
                 // Imposta l'immagine dell'embed con la miniatura del live
                 embed.setImage(stream.thumbnail_url.replace('{width}', '1280').replace('{height}', '720'));
