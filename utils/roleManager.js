@@ -7,11 +7,11 @@ const { PermissionsBitField } = require('discord.js');
  * @returns {Promise<import('discord.js').Role|null>} Il ruolo 'Muted' o null in caso di errore.
  */
 async function ensureMuteRole(guild) {
-    let muteRole = guild.roles.cache.find(r => r.name === 'Muted');
+    let muteRole = guild.roles.cache.find(r => r.name === '· Silenziato');
     if (!muteRole) {
         try {
             muteRole = await guild.roles.create({
-                name: 'Muted',
+                name: '· Silenziato',
                 color: '#555555',
                 permissions: []
             });
@@ -29,7 +29,7 @@ async function ensureMuteRole(guild) {
                 }
             }
         } catch (error) {
-            console.error('Errore creando ruolo Muted:', error);
+            console.error('Errore creando ruolo · Silenziato:', error);
             return null;
         }
     }
