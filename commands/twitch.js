@@ -28,8 +28,8 @@ module.exports = {
             const tokenData = await tokenRes.json();
             const accessToken = tokenData.access_token;
             if (!accessToken) {
-                console.error('<:K3_wrong:1407992234145611867>Errore nell\'ottenere il token di Twitch:', tokenData);
-                return await interaction.editReply('<:K3_wrong:1407992234145611867>Errore di autenticazione con l\'API di Twitch.');
+                console.error('<:K3_wrong:1407992234145611867> Errore nell\'ottenere il token di Twitch:', tokenData);
+                return await interaction.editReply('<:K3_wrong:1407992234145611867> Errore di autenticazione con l\'API di Twitch.');
             }
 
             // --- Passo 2: Ottenere i dati dell'utente (incluso l'ID) ---
@@ -44,7 +44,7 @@ module.exports = {
             const user = userData.data[0];
 
             if (!user) {
-                return await interaction.editReply(`<:K3_wrong:1407992234145611867>Canale **${search}** non trovato.`);
+                return await interaction.editReply(`<:K3_wrong:1407992234145611867> Canale **${search}** non trovato.`);
             }
 
             // --- Passo 3: Ottenere il conteggio dei follower ---
@@ -84,11 +84,11 @@ module.exports = {
             if (stream) {
                 // Se lo streamer è live, aggiungi le informazioni sulla live e il link
                 embed.addFields(
-                    { name: 'Stato', value: '**On Air**<:K3_onair:1291676245259456552>', inline: false },
-                    { name: '<:K3_Twitch:1409435097039507569>Title', value: stream.title, inline: false },
-                    { name: '🎮Category', value: stream.game_name, inline: false },
-                    { name: '👀Spectators', value: stream.viewer_count.toLocaleString('it-IT'), inline: true },
-                    { name: '<:K3_clip:1289933214462251060>Link', value: `[Guarda la live qui](https://www.twitch.tv/${user.login})`, inline: false }
+                    { name: 'Stato', value: '**On Air** <:K3_onair:1291676245259456552>', inline: false },
+                    { name: '<:K3_Twitch:1409435097039507569> Title', value: stream.title, inline: false },
+                    { name: '🎮 Category', value: stream.game_name, inline: true },
+                    { name: '👀 Spectators', value: stream.viewer_count.toLocaleString('it-IT'), inline: true },
+                    { name: '<:K3_clip:1289933214462251060> Link', value: `[Guarda la live qui](https://www.twitch.tv/${user.login})`, inline: false }
                 );
                 // Imposta l'immagine dell'embed con la miniatura del live
                 embed.setImage(stream.thumbnail_url.replace('{width}', '1280').replace('{height}', '720'));
@@ -100,8 +100,8 @@ module.exports = {
             await interaction.editReply({ embeds: [embed] });
 
         } catch (err) {
-            console.error('<:K3_wrong:1407992234145611867>Errore API di Twitch:', err.message);
-            await interaction.editReply(`<:K3_wrong:1407992234145611867>Si è verificato un errore: **${err.message}**`);
+            console.error('<:K3_wrong:1407992234145611867> Errore API di Twitch:', err.message);
+            await interaction.editReply(`<:K3_wrong:1407992234145611867> Si è verificato un errore: **${err.message}**`);
         }
     }
 };
