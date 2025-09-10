@@ -101,7 +101,8 @@ module.exports = {
         } else {
             const readablePermissions = targetMember.permissions.toArray()
                 .map(perm => perm.replace(/([A-Z])/g, ' $1').trim())
-                .join(', ');z
+                .join(', ');
+            // Il carattere 'z' è stato rimosso da qui.
             if (readablePermissions.length > 0) {
                 globalPermissionsValue = readablePermissions;
             }
