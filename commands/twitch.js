@@ -85,9 +85,9 @@ module.exports = {
                 // Se lo streamer è live, aggiungi le informazioni sulla live e il link
                 embed.addFields(
                     { name: 'Stato', value: '**LIVE** 🔴', inline: false },
-                    { name: '📺 Titolo', value: stream.title, inline: true },
-                    { name: '🎮 Gioco', value: stream.game_name, inline: true },
-                    { name: '👀 Spettatori', value: stream.viewer_count.toLocaleString('it-IT'), inline: true },
+                    { name: '📺 Titolo', value: stream.title, inline: false },
+                    { name: '🎮 Gioco', value: stream.game_name, inline: false },
+                    { name: '👀 Spettatori', value: stream.viewer_count.toLocaleString('it-IT'), inline: false },
                     { name: '🔗 Link alla Stream', value: `[Guarda la live qui](https://www.twitch.tv/${user.login})`, inline: false }
                 );
                 // Imposta l'immagine dell'embed con la miniatura del live
