@@ -3,22 +3,21 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fetch = require('node-fetch');
 
 module.exports = {
-    // The data property of a command is where you configure its name, description, and options.
-    // It's a best practice to use SlashCommandBuilder for this.
     data: new SlashCommandBuilder()
         .setName('twitch')
-        .setDescription('Searches for a streamer on Twitch and shows their profile info.')
+        .setDescription('Ricerca un canale Twitch e mostra le sue informazioni.')
         .addStringOption(option =>
             option.setName('search')
-                .setDescription('Type the name of the streamer to search for')
+                .setDescription('Inserisci il nome del canale da cercare')
                 .setRequired(true)),
-    async execute(interaction, ephemeralReply) {
-        await interaction.deferReply(); // Defer the reply to give the API time to respond
+    async execute(interaction) {
+        // Defer della risposta per evitare timeout, poiché le chiamate API potrebbero richiedere tempo.
+        await interaction.deferReply();
 
         const search = interaction.options.getString('search');
         try {
-            // --- Step 1: Get an App Access Token from Twitch ---
-            // This is required for almost all Helix API requests.
+            // --- Passo 1: Ottenere un Access Token dall'API di Twitch ---
+            // Questo token è necessario per tutte le richieste API.
             const tokenRes = await fetch('https://id.twitch.tv/oauth2/token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -32,11 +31,11 @@ module.exports = {
             const tokenData = await tokenRes.json();
             const accessToken = tokenData.access_token;
             if (!accessToken) {
-                console.error('❌ Failed to get Twitch access token:', tokenData);
-                return await interaction.editReply('🚫 Failed to authenticate with Twitch API.');
+                console.error('❌ Errore nell\'ottenere il token di Twitch:', tokenData);
+                return await interaction.editReply('🚫 Errore di autenticazione con l\'API di Twitch.');
             }
 
-            // --- Step 2: Get User Data (including user ID) ---
+            // --- Passo 2: Ottenere i dati dell'utente (incluso l'ID) ---
             const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${search}`, {
                 headers: {
                     'Client-ID': process.env.TWITCH_CLIENT_ID,
@@ -48,11 +47,10 @@ module.exports = {
             const user = userData.data[0];
 
             if (!user) {
-                return await interaction.editReply(`❌ Streamer **${search}** not found.`);
+                return await interaction.editReply(`❌ Canale **${search}** non trovato.`);
             }
 
-            // --- Step 3: Get Follower Count ---
-            // The API requires the user's ID, which we got in the previous step.
+            // --- Passo 3: Ottenere il conteggio dei follower ---
             const followersRes = await fetch(`https://api.twitch.tv/helix/channels/followers?broadcaster_id=${user.id}`, {
                 headers: {
                     'Client-ID': process.env.TWITCH_CLIENT_ID,
@@ -63,7 +61,7 @@ module.exports = {
             const followersData = await followersRes.json();
             const followerCount = followersData.total || 0;
 
-            // --- Step 4: Check if the Streamer is Live ---
+            // --- Passo 4: Controllare se il canale è in live ---
             const streamRes = await fetch(`https://api.twitch.tv/helix/streams?user_id=${user.id}`, {
                 headers: {
                     'Client-ID': process.env.TWITCH_CLIENT_ID,
@@ -72,41 +70,40 @@ module.exports = {
             });
 
             const streamData = await streamRes.json();
-            const stream = streamData.data[0]; // If the array is empty, they are offline.
+            const stream = streamData.data[0]; // Se l'array è vuoto, il canale è offline.
 
-            // --- Step 5: Build and Send the Embed ---
+            // --- Passo 5: Creare e inviare l'embed ---
             const embed = new EmbedBuilder()
-                .setColor('#9146FF')
-                .setTitle(`Twitch Profile: ${user.display_name}`)
-                .setURL(`https://www.twitch.tv/${user.login}`) // Add a direct link to the profile
+                .setColor('#9146FF') // Colore viola di Twitch
+                .setTitle(user.display_name)
+                .setURL(`https://www.twitch.tv/${user.login}`) // Aggiunge un link diretto al canale
                 .setThumbnail(user.profile_image_url)
-                .setDescription(user.description || 'No description available.')
+                .setDescription(user.description || 'Nessuna descrizione disponibile.')
                 .addFields(
-                    { name: '👤 Username', value: user.display_name, inline: true },
-                    { name: 'ID', value: user.id, inline: true },
-                    { name: '📅 Account Created', value: new Date(user.created_at).toLocaleDateString('en-US'), inline: true },
-                    { name: '❤️ Followers', value: `${followerCount.toLocaleString()}`, inline: true } // Format the number
+                    { name: '📅 Account Creato', value: new Date(user.created_at).toLocaleDateString('it-IT'), inline: true },
+                    { name: `<:K3_invite:1289918660185555014> Follower`, value: `${followerCount.toLocaleString('it-IT')}`, inline: true }
                 );
 
             if (stream) {
-                // Add a field for live stream details
+                // Se lo streamer è live, aggiungi le informazioni sulla live
                 embed.addFields(
-                    { name: '<:K3_Twitch:1409435097039507569> Status', value: `**Live!**`, inline: false },
-                    { name: '📺 Title', value: stream.title, inline: true },
-                    { name: '🎮 Playing', value: stream.game_name, inline: true },
-                    { name: '👀 Viewers', value: stream.viewer_count.toLocaleString(), inline: true }
+                    { name: 'Stato', value: '**LIVE** 🔴', inline: false },
+                    { name: '📺 Titolo', value: stream.title, inline: true },
+                    { name: '🎮 Gioco', value: stream.game_name, inline: true },
+                    { name: '👀 Spettatori', value: stream.viewer_count.toLocaleString('it-IT'), inline: true }
                 );
-                embed.setImage(stream.thumbnail_url.replace('{width}', '1280').replace('{height}', '720')); // Show a live thumbnail
+                // Imposta l'immagine dell'embed con la miniatura del live
+                embed.setImage(stream.thumbnail_url.replace('{width}', '1280').replace('{height}', '720'));
             } else {
-                // Add a field for offline status
-                embed.addFields({ name: '<:K3_Twitch:1409435097039507569> Status', value: '**Offline**', inline: false });
+                // Se lo streamer è offline
+                embed.addFields({ name: 'Stato', value: '**Offline**', inline: false });
             }
 
             await interaction.editReply({ embeds: [embed] });
 
         } catch (err) {
-            console.error('❌ Twitch API Error:', err.message);
-            await interaction.editReply(`🚫 Twitch Error: **${err.message}**`);
+            console.error('❌ Errore API di Twitch:', err.message);
+            await interaction.editReply(`🚫 Si è verificato un errore: **${err.message}**`);
         }
     }
 };
