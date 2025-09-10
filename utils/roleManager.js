@@ -13,17 +13,20 @@ async function ensureMuteRole(guild) {
             muteRole = await guild.roles.create({
                 name: 'Muted',
                 color: '#555555',
-                permissions: [] // Inizialmente nessuna permissione diretta
+                permissions: []
             });
             // Sovrascrivi i permessi per ogni canale
             for (const [, channel] of guild.channels.cache) {
-                await channel.permissionOverwrites.edit(muteRole, {
-                    SendMessages: false,
-                    AddReactions: false,
-                    Speak: false,
-                    Connect: false,
-                    UseApplicationCommands: false // Impedisci l'uso di comandi slash in canali dove è mutato
-                });
+                // Aggiungi questo controllo per evitare l'errore!
+                if (channel.manageable) { 
+                    await channel.permissionOverwrites.edit(muteRole, {
+                        SendMessages: false,
+                        AddReactions: false,
+                        Speak: false,
+                        Connect: false,
+                        UseApplicationCommands: false
+                    });
+                }
             }
         } catch (error) {
             console.error('Errore creando ruolo Muted:', error);
