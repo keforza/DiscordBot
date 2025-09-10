@@ -11,7 +11,8 @@ module.exports = {
 
     async execute(interaction) {
         // Defer the reply, making it publicly visible from the start
-        await interaction.deferReply({ ephemeral: false });
+        // The "ephemeral: false" option is now deprecated and is the default behavior, so it can be removed.
+        await interaction.deferReply();
 
         const guild = interaction.guild; // Get the Guild object (server)
         if (!guild) {
@@ -27,7 +28,7 @@ module.exports = {
 
         // Fetch the owner's user object to get their username
         const ownerUser = await interaction.client.users.fetch(guild.ownerId);
-        
+
         // Member count (including bots) is always accurate from the API
         const totalMembers = guild.memberCount;
 
@@ -37,7 +38,7 @@ module.exports = {
 
         // Count bots from the fetched members
         const botMembers = members.filter(member => member.user.bot).size;
-        
+
         // Calculate human members by subtracting bots from the total
         const humanMembers = totalMembers - botMembers;
 

@@ -50,7 +50,7 @@ module.exports = {
                 .setDescription(user.description || 'No description available.')
                 .addFields(
                     { name: '📅 Created On', value: new Date(user.created_at).toLocaleDateString('en-US'), inline: true }, // Changed locale to 'en-US' for English formatting
-                    { name: '<:K3_twitch:1291444671192629298> Twitch Profile', value: `[${user.display_name}](https://www.twitch.tv/${user.login})` }
+                    { name: '<:K3_Twitch:1409435097039507569> Twitch Profile', value: `[${user.display_name}](https://www.twitch.tv/${user.login})` }
                 );
 
             await interaction.reply({ embeds: [embed] }); // Not a moderation command, so not ephemeral
