@@ -21,7 +21,7 @@ module.exports = {
                 .setDescription('Duration of the mute (e.g., 10m, 1h, 1d)')
                 .setRequired(false)
         )
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.ModerateMembers)
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ModerateMessages)
         .setDMPermission(false),
 
     async execute(interaction) {
