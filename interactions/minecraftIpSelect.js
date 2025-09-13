@@ -8,7 +8,7 @@ module.exports = {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral }); 
 
         const serverIP = 'kappiani.serveminecraft.net'; 
-        const serverPort = '27837'; 
+        const serverPort = '35720'; 
 
         const selectedEdition = interaction.values[0]; 
 
