@@ -82,7 +82,7 @@ npm install
 Create a `.env` file in the root directory and add the required Discord bot credentials:
 
 ```env
-TOKEN=your_discord_bot_token
+TOKEN=YOUR_DISCORD_BOT_TOKEN
 ```
 
 > **Never share your bot token or commit your `.env` file to GitHub.**
