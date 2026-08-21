@@ -8,18 +8,18 @@ The bot was created as a personal project and includes several useful commands a
 
 The bot currently includes several commands, including:
 
-* [🎌Anime](anime.js)
-* [🗑️Message deletion](delete.js)
-* [ℹ️Server information](infoserver.js)
-* [📖Manga](manga.js)
-* [😂Memes](meme.js)
-* [⛏️Minecraft server information](minecraftip.js)
-* [🔇Mute / Unmute]()
-* [🏓Ping](ping.js)
-* [🐱Pokémon](pokemon.js)
-* [🎮Twitch information](twitch.js)
-* [👤User information](userinfo.js)
-* [▶️YouTube information](youtube.js)
+* [🎌Anime](commands/anime.js)
+* [🗑️Message deletion](commands/delete.js)
+* [ℹ️Server information](commands/infoserver.js)
+* [📖Manga](commands/manga.js)
+* [😂Memes](commands/meme.js)
+* [⛏️Minecraft server information](commands/minecraftip.js)
+* 🔇Mute / Unmute
+* [🏓Ping](ccommands/ping.js)
+* [🐱Pokémon](commands/pokemon.js)
+* [🎮Twitch information](commands/twitch.js)
+* [👤User information](commands/userinfo.js)
+* [▶️YouTube information](commands/youtube.js)
 
 Commands are organized inside the `commands/` directory.
 
