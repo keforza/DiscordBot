@@ -4,4 +4,5 @@ npm-debug.log
 .DS_Store
 *.zip
 *.rar
-.
+.exe
+.7z
