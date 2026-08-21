@@ -2,7 +2,8 @@
 node_modules/
 npm-debug.log
 .DS_Store
+*.env
 *.zip
 *.rar
-.exe
-.7z
+*.exe
+*.7z
