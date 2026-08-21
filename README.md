@@ -116,4 +116,4 @@ GitHub: [@keforza](https://github.com/keforza)
 
 ---
 
-⭐ Feel free to explore, modify and improve the project or if u need help feel free to write in the ``` **Issues** ``` section.
+⭐ Feel free to explore, modify and improve the project or if u need help feel free to write in the ```Issues``` section.
