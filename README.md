@@ -5,7 +5,7 @@ They are no vulnerable data so don't worry about that.<br>
 
 
 ## BOT COMMANDS ##
-You find a lot of commands for the bot but the main file is:
+You find a lot of commands for the bot but the main file is:<br>
 [bot.js](bot.js)
 Enjoy!
 
