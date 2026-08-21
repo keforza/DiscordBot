@@ -14,7 +14,8 @@ The bot currently includes several commands, including:
 * [📖Manga](commands/manga.js)
 * [😂Memes](commands/meme.js)
 * [⛏️Minecraft server information](commands/minecraftip.js)
-* 🔇Mute / Unmute
+* [🔇Mute](commands/mute.js) 
+* [🔊Unmute](commands/unmute.js)
 * [🏓Ping](ccommands/ping.js)
 * [🐱Pokémon](commands/pokemon.js)
 * [🎮Twitch information](commands/twitch.js)
